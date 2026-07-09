@@ -81,13 +81,17 @@
 <div id="app-shell" class="app-shell hidden">
   <aside class="sidebar">
     <div class="sidebar-logo">
-      <img src="assets/logo.png" alt="Lenarge" onerror="this.style.display='none'">
-      <span>Lenarge</span>
+      <img src="assets/logo.png" alt="Lenarge"
+           onerror="this.style.display='none'; document.getElementById('logo-fallback-text').style.display='inline';">
+      <span id="logo-fallback-text" class="logo-fallback">Lenarge</span>
     </div>
-    <div class="nav-item" data-view="dashboard">📊 Dashboard</div>
-    <div class="nav-item" data-view="nova">➕ Nova solicitação</div>
-    <div class="nav-item" data-view="lista">📋 Pesquisar / Lista</div>
-    <div class="nav-item" data-view="config" id="nav-config">⚙️ Configurações</div>
+
+    <nav class="nav-list">
+      <div class="nav-item" data-view="dashboard">📊 Dashboard</div>
+      <div class="nav-item" data-view="nova">➕ Nova solicitação</div>
+      <div class="nav-item" data-view="lista">📋 Pesquisar / Lista</div>
+      <div class="nav-item" data-view="config" id="nav-config">⚙️ Configurações</div>
+    </nav>
 
     <div class="sidebar-user">
       <div class="avatar" id="user-avatar">?</div>
@@ -104,17 +108,3 @@
     <div class="view-content" id="view-content"></div>
   </div>
 </div>
-
-<div id="modal-root"></div>
-
-<script src="js/api.js"></script>
-<script src="js/enums.js"></script>
-<script src="js/auth.js"></script>
-<script src="js/dashboard.js"></script>
-<script src="js/nova.js"></script>
-<script src="js/lista.js"></script>
-<script src="js/detalhe.js"></script>
-<script src="js/config.js"></script>
-<script src="js/app.js"></script>
-</body>
-</html>
