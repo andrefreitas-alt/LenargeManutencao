@@ -158,16 +158,28 @@ textarea { resize: vertical; min-height: 70px; }
   padding: 20px 0;
   flex-shrink: 0;
 }
-
 .sidebar-logo {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  padding: 0 20px 20px;
-  border-bottom: 1px solid rgba(255,255,255,0.08);
-  margin-bottom: 16px;
+    display: flex;
+    align-items: center;
+    gap: 8px;           /* Reduzido de 10px para 8px */
+    padding: 15px 10px; /* Reduzido o espaçamento para não espremer nas bordas */
+    border-bottom: 1px solid rgba(255,255,255,0.08);
+    margin-bottom: 16px;
+    box-sizing: border-box; /* Garante que os paddings não aumentem o tamanho total */
 }
-.sidebar-logo img { height: 28px; }
+
+.sidebar-logo img { 
+    height: 20px;       /* Reduzido de 28px para 20px */
+    width: auto;
+}
+
+.sidebar-logo span { 
+    color: #fff; 
+    font-weight: 700; 
+    font-size: 13px;    /* Reduzido ligeiramente de 15px para 13px */
+    letter-spacing: 0.5px;
+}
+.sidebar-logo img { height: 20px; }
 .sidebar-logo span { color: #fff; font-weight: 700; font-size: 15px; }
 .sidebar-logo {
     display: flex;
