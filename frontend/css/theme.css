@@ -128,57 +128,50 @@ textarea { resize: vertical; min-height: 70px; }
   box-shadow: 0 20px 50px rgba(0,0,0,0.3);
 }
 
-.auth-logo {
+/* 1. Aumentar um pouco a largura da barra lateral para dar mais espaço */
+.sidebar {
+    width: 260px; /* Aumentamos de 230px para 260px */
+    background-color: var(--dark-bg);
+    color: var(--white);
     display: flex;
-    justify-content: center; /* Garante a centralização perfeita */
-    align-items: center;
-    margin-bottom: 24px;
-    width: 100%;
+    flex-direction: column;
+    height: 100vh;
+    position: fixed;
+    left: 0;
+    top: 0;
+    z-index: 1000;
 }
 
-.auth-logo img {
-    max-width: 200px;        /* Controla o tamanho exato da logo no card de login */
-    width: 100%;
-    height: auto;
+/* 2. Mudar o comportamento do container da logo para organizar em coluna */
+.sidebar-logo {
+    display: flex;
+    flex-direction: column; /* Coloca a imagem em cima e o texto embaixo */
+    align-items: center;    /* Centraliza os dois na horizontal */
+    text-align: center;
+    gap: 12px;
+    padding: 25px 15px;
+    border-bottom: 1px solid rgba(255,255,255,0.08);
+    margin-bottom: 16px;
+    box-sizing: border-box;
+}
+
+/* 3. Controlar o tamanho ideal da imagem da logo */
+.sidebar-logo img { 
+    height: 35px; /* Tamanho perfeito para visualização */
+    width: auto;
     object-fit: contain;
 }
 
-.auth-card h1 { font-size: 20px; margin: 0 0 20px; text-align: center; }
-.auth-footer { text-align: center; margin-top: 16px; font-size: 13px; color: var(--text-secondary); }
-
-/* ===================== LAYOUT PRINCIPAL ===================== */
-.app-shell { display: flex; min-height: 100vh; }
-
-.sidebar {
-  width: 230px;
-  background: var(--sidebar-bg);
-  color: var(--sidebar-text);
-  display: flex;
-  flex-direction: column;
-  padding: 20px 0;
-  flex-shrink: 0;
-}
-.sidebar-logo {
-    display: flex;
-    align-items: center;
-    gap: 8px;           /* Reduzido de 10px para 8px */
-    padding: 15px 10px; /* Reduzido o espaçamento para não espremer nas bordas */
-    border-bottom: 1px solid rgba(255,255,255,0.08);
-    margin-bottom: 16px;
-    box-sizing: border-box; /* Garante que os paddings não aumentem o tamanho total */
-}
-
-.sidebar-logo img { 
-    height: 20px;       /* Reduzido de 28px para 20px */
-    width: auto;
-}
-
+/* 4. Permitir que o título longo quebre linhas elegantemente sem sumir */
 .sidebar-logo span { 
     color: #fff; 
-    font-weight: 700; 
-    font-size: 13px;    /* Reduzido ligeiramente de 15px para 13px */
-    letter-spacing: 0.5px;
+    font-weight: 600; 
+    font-size: 13px;       /* Tamanho legível para textos longos */
+    line-height: 1.4;
+    white-space: normal;   /* Crucial: permite que o texto quebre linhas */
+    padding: 0 5px;
 }
+
 .sidebar-logo img { height: 20px; }
 .sidebar-logo span { color: #fff; font-weight: 700; font-size: 15px; }
 .sidebar-logo {
@@ -233,7 +226,12 @@ textarea { resize: vertical; min-height: 70px; }
 .logout-link { margin-left: auto; cursor: pointer; color: var(--sidebar-text); font-size: 12px; }
 .logout-link:hover { color: #fff; }
 
-.main-content { flex: 1; display: flex; flex-direction: column; min-width: 0; }
+.main-content {
+    margin-left: 260px; /* Deve ser exatamente igual à largura da sidebar */
+    padding: 20px;
+    width: calc(100% - 260px);
+    box-sizing: border-box;
+}
 
 .topbar {
   background: var(--surface);
