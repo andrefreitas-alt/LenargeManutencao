@@ -6,27 +6,53 @@ const usuarioService = require('../services/usuarioService');
 
 router.use(requireAdmin);
 
-router.get('/', (req, res) => {
-  res.json({ itens: usuarioService.obterTodos() });
+// Obter todos (Adicionado async/await e try/catch)
+router.get('/', async (req, res) => {
+  try {
+    const itens = await usuarioService.obterTodos();
+    res.json({ itens });
+  } catch (err) {
+    console.error('Erro ao obter usuários:', err);
+    res.status(500).json({ erro: 'Erro interno ao buscar usuários.' });
+  }
 });
 
-router.post('/', (req, res) => {
-  const { nome, nomeUsuario, email, telefone, senha, papel } = req.body;
-  const resultado = usuarioService.criar({ nome, nomeUsuario, email, telefone, senha, papel });
-  if (!resultado.sucesso) return res.status(400).json({ erro: resultado.erro });
-  res.status(201).json({ usuario: resultado.usuario });
+// Criar usuário (Adicionado async/await e try/catch)
+router.post('/', async (req, res) => {
+  try {
+    const { nome, nomeUsuario, email, telefone, senha, papel } = req.body;
+    const resultado = await usuarioService.criar({ nome, nomeUsuario, email, telefone, senha, papel });
+    
+    if (!resultado.sucesso) return res.status(400).json({ erro: resultado.erro });
+    res.status(201).json({ usuario: resultado.usuario });
+  } catch (err) {
+    console.error('Erro ao criar usuário:', err);
+    res.status(500).json({ erro: 'Erro interno ao criar usuário.' });
+  }
 });
 
-router.post('/:id/senha', (req, res) => {
-  const resultado = usuarioService.redefinirSenha(Number(req.params.id), req.body.novaSenha);
-  if (!resultado.ok) return res.status(400).json({ erro: resultado.erro });
-  res.json({ ok: true });
+// Redefinir senha (Adicionado async/await)
+router.post('/:id/senha', async (req, res) => {
+  try {
+    const resultado = await usuarioService.redefinirSenha(Number(req.params.id), req.body.novaSenha);
+    if (!resultado.ok) return res.status(400).json({ erro: resultado.erro });
+    res.json({ ok: true });
+  } catch (err) {
+    console.error('Erro ao redefinir senha:', err);
+    res.status(500).json({ erro: 'Erro interno ao redefinir senha.' });
+  }
 });
 
-router.delete('/:id', (req, res) => {
-  const resultado = usuarioService.excluir(Number(req.params.id), req.session.usuario.id);
-  if (!resultado.ok) return res.status(400).json({ erro: resultado.erro });
-  res.json({ ok: true });
+// Excluir usuário (Adicionado async/await)
+router.delete('/:id', async (req, res) => {
+  try {
+    const resultado = await usuarioService.excluir(Number(req.params.id), req.session.usuario.id);
+    if (!resultado.ok) return res.status(400).json({ erro: resultado.erro });
+    res.json({ ok: true });
+  } catch (err) {
+    console.error('Erro ao excluir usuário:', err);
+    res.status(500).json({ erro: 'Erro interno ao excluir usuário.' });
+  }
 });
 
 module.exports = router;

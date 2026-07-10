@@ -1,14 +1,14 @@
 // services/dashboardService.js
 // Equivalente aos CÁLCULOS do ViewModels/DashboardViewModel.cs original.
-// A renderização dos gráficos (antes feita com OxyPlot) agora é responsabilidade
-// do frontend (Chart.js) — aqui só preparamos os dados agregados.
 
 const solicitacaoService = require('./solicitacaoService');
 const cadastroService = require('./cadastroService');
 const { STATUS_DISPLAY } = require('./enums');
 
-function obterDashboard(usuarioAtual) {
-  const solicitacoes = solicitacaoService.obterTodas(usuarioAtual);
+// Adicionado async na função principal
+async function obterDashboard(usuarioAtual) {
+  // Adicionado await para esperar os dados assíncronos do banco PostgreSQL
+  const solicitacoes = await solicitacaoService.obterTodas(usuarioAtual);
 
   const total = solicitacoes.length;
   const concluidos = solicitacoes.filter(s => s.status === 'Concluido').length;
@@ -46,15 +46,17 @@ function obterDashboard(usuarioAtual) {
     .map(st => ({ status: st, label: STATUS_DISPLAY[st], valor: solicitacoes.filter(s => s.status === st).length }))
     .filter(x => x.valor > 0);
 
-  // Por tipo
-  const tipos = cadastroService.obterTipos().map(t => t.nome);
+  // Por tipo (Adicionado await se o cadastroService também buscar do banco)
+  const listaTipos = await cadastroService.obterTipos();
+  const tipos = listaTipos.map(t => t.nome);
   const porTipo = {
     labels: tipos,
     valores: tipos.map(tipo => solicitacoes.filter(s => s.tipo === tipo).length)
   };
 
-  // Por local
-  const locais = cadastroService.obterLocais().map(l => l.nome);
+  // Por local (Adicionado await se o cadastroService também buscar do banco)
+  const listaLocais = await cadastroService.obterLocais();
+  const locais = listaLocais.map(l => l.nome);
   const porLocal = {
     labels: locais,
     valores: locais.map(local => solicitacoes.filter(s => s.local === local).length)

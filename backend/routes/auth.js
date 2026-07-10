@@ -3,28 +3,42 @@ const express = require('express');
 const router = express.Router();
 const authService = require('../services/authService');
 
-router.post('/login', (req, res) => {
-  const { nomeUsuario, senha } = req.body;
-  const resultado = authService.login(nomeUsuario, senha);
+// Adicionado 'async' na rota de login
+router.post('/login', async (req, res) => {
+  try {
+    const { nomeUsuario, senha } = req.body;
+    // Adicionado 'await' para aguardar a resposta do banco
+    const resultado = await authService.login(nomeUsuario, senha);
 
-  if (!resultado.sucesso) {
-    return res.status(400).json({ erro: resultado.erro });
+    if (!resultado.sucesso) {
+      return res.status(400).json({ erro: resultado.erro });
+    }
+
+    req.session.usuario = resultado.usuario;
+    res.json({ usuario: resultado.usuario });
+  } catch (error) {
+    console.error('Erro no login:', error);
+    res.status(500).json({ erro: 'Erro interno no servidor.' });
   }
-
-  req.session.usuario = resultado.usuario;
-  res.json({ usuario: resultado.usuario });
 });
 
-router.post('/signup', (req, res) => {
-  const { nome, email, telefone, nomeUsuario, senha, confirmarSenha } = req.body;
-  const resultado = authService.cadastrarSolicitante({ nome, email, telefone, nomeUsuario, senha, confirmarSenha });
+// Adicionado 'async' na rota de cadastro
+router.post('/signup', async (req, res) => {
+  try {
+    const { nome, email, telefone, nomeUsuario, senha, confirmarSenha } = req.body;
+    // Adicionado 'await' aqui também
+    const resultado = await authService.cadastrarSolicitante({ nome, email, telefone, nomeUsuario, senha, confirmarSenha });
 
-  if (!resultado.sucesso) {
-    return res.status(400).json({ erro: resultado.erro });
+    if (!resultado.sucesso) {
+      return res.status(400).json({ erro: resultado.erro });
+    }
+
+    req.session.usuario = resultado.usuario;
+    res.json({ usuario: resultado.usuario });
+  } catch (error) {
+    console.error('Erro no cadastro:', error);
+    res.status(500).json({ erro: 'Erro interno no servidor.' });
   }
-
-  req.session.usuario = resultado.usuario;
-  res.json({ usuario: resultado.usuario });
 });
 
 router.post('/logout', (req, res) => {

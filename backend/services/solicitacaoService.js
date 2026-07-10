@@ -30,59 +30,66 @@ function mapSolicitacao(row) {
   };
 }
 
-function carregarHistorico(solicitacaoId) {
-  return db.prepare('SELECT * FROM historico WHERE solicitacao_id = ? ORDER BY data DESC').all(solicitacaoId)
-    .map(h => ({ id: h.id, acao: h.acao, usuario: h.usuario, detalhe: h.detalhe, data: h.data }));
+// Convertida para async
+async function carregarHistorico(solicitacaoId) {
+  const res = await db.query('SELECT * FROM historico WHERE solicitacao_id = $1 ORDER BY data DESC', [solicitacaoId]);
+  return res.rows.map(h => ({ id: h.id, acao: h.acao, usuario: h.usuario, detalhe: h.detalhe, data: h.data }));
 }
 
-// Administrador vê tudo. Solicitante só vê as próprias solicitações
-// (equivalente a "Consultar apenas suas solicitações" do requisito original).
-function obterTodas(usuarioAtual) {
-  let rows;
+// Convertida para async
+async function obterTodas(usuarioAtual) {
+  let res;
   if (usuarioAtual.papel === 'Solicitante') {
-    rows = db.prepare('SELECT * FROM solicitacoes WHERE criado_por_usuario_id = ? ORDER BY data_abertura DESC').all(usuarioAtual.id);
+    res = await db.query('SELECT * FROM solicitacoes WHERE criado_por_usuario_id = $1 ORDER BY data_abertura DESC', [usuarioAtual.id]);
   } else {
-    rows = db.prepare('SELECT * FROM solicitacoes ORDER BY data_abertura DESC').all();
+    res = await db.query('SELECT * FROM solicitacoes ORDER BY data_abertura DESC');
   }
-  return rows.map(mapSolicitacao);
+  return res.rows.map(mapSolicitacao);
 }
 
-function obterPorId(id) {
-  const row = db.prepare('SELECT * FROM solicitacoes WHERE id = ?').get(id);
+// Convertida para async
+async function obterPorId(id) {
+  const res = await db.query('SELECT * FROM solicitacoes WHERE id = $1', [id]);
+  const row = res.rows[0];
   if (!row) return null;
   const item = mapSolicitacao(row);
-  item.historico = carregarHistorico(id);
+  item.historico = await carregarHistorico(id);
   return item;
 }
 
-function criar(nova, usuarioAtual) {
+// Convertida para async
+async function criar(nova, usuarioAtual) {
   const agora = new Date().toISOString();
-  const info = db.prepare(`
+  
+  // No Postgres, usamos RETURNING id para pegar o ID gerado
+  const insertSolicitacao = await db.query(`
     INSERT INTO solicitacoes
       (solicitante, placa, local, tipo, descricao, responsavel, observacoes, prioridade, status, data_abertura, criado_por_usuario_id)
-    VALUES (?, ?, ?, ?, ?, ?, ?, ?, 'Pendente', ?, ?)
-  `).run(
+    VALUES ($1, $2, $3, $4, $5, $6, $7, $8, 'Pendente', $9, $10)
+    RETURNING id
+  `, [
     nova.solicitante, nova.placa, nova.local, nova.tipo, nova.descricao,
     nova.responsavel, nova.observacoes, nova.prioridade, agora, usuarioAtual.id
-  );
+  ]);
 
-  db.prepare(`
+  const novoId = insertSolicitacao.rows[0].id;
+
+  await db.query(`
     INSERT INTO historico (solicitacao_id, acao, usuario, detalhe, data)
-    VALUES (?, 'Criação', ?, 'Solicitação criada', ?)
-  `).run(info.lastInsertRowid, usuarioAtual.nome, agora);
+    VALUES ($1, 'Criação', $2, 'Solicitação criada', $3)
+  `, [novoId, usuarioAtual.nome, agora]);
 
-  return obterPorId(info.lastInsertRowid);
+  return await obterPorId(novoId);
 }
 
-// Só Administrador deveria poder mudar status — a tela já esconde os
-// botões para Solicitante, mas confirmamos aqui de novo (defesa em
-// profundidade: nunca confiar só na UI).
-function mudarStatus(solicitacaoId, novoStatus, usuarioAtual) {
+// Convertida para async
+async function mudarStatus(solicitacaoId, novoStatus, usuarioAtual) {
   if (usuarioAtual.papel !== 'Administrador') {
     throw Object.assign(new Error('Apenas Administradores podem alterar o status.'), { status: 403 });
   }
 
-  const item = db.prepare('SELECT * FROM solicitacoes WHERE id = ?').get(solicitacaoId);
+  const res = await db.query('SELECT * FROM solicitacoes WHERE id = $1', [solicitacaoId]);
+  const item = res.rows[0];
   if (!item) throw Object.assign(new Error('Solicitação não encontrada.'), { status: 404 });
 
   const statusAntigo = item.status;
@@ -91,45 +98,52 @@ function mudarStatus(solicitacaoId, novoStatus, usuarioAtual) {
   const dataInicio = (novoStatus === 'EmAndamento' && !item.data_inicio) ? agora : item.data_inicio;
   const dataConclusao = (novoStatus === 'Concluido') ? agora : item.data_conclusao;
 
-  db.prepare(`
-    UPDATE solicitacoes SET status = ?, data_inicio = ?, data_conclusao = ? WHERE id = ?
-  `).run(novoStatus, dataInicio, dataConclusao, solicitacaoId);
+  await db.query(`
+    UPDATE solicitacoes SET status = $1, data_inicio = $2, data_conclusao = $3 WHERE id = $4
+  `, [novoStatus, dataInicio, dataConclusao, solicitacaoId]);
 
-  db.prepare(`
+  await db.query(`
     INSERT INTO historico (solicitacao_id, acao, usuario, detalhe, data)
-    VALUES (?, 'Status alterado', ?, ?, ?)
-  `).run(solicitacaoId, usuarioAtual.nome, `${statusToDisplay(statusAntigo)} → ${statusToDisplay(novoStatus)}`, agora);
+    VALUES ($1, 'Status alterado', $2, $3, $4)
+  `, [solicitacaoId, usuarioAtual.nome, `${statusToDisplay(statusAntigo)} → ${statusToDisplay(novoStatus)}`, agora]);
 
-  return obterPorId(solicitacaoId);
+  return await obterPorId(solicitacaoId);
 }
 
-function duplicar(solicitacaoId, usuarioAtual) {
-  const original = db.prepare('SELECT * FROM solicitacoes WHERE id = ?').get(solicitacaoId);
+// Convertida para async
+async function duplicar(solicitacaoId, usuarioAtual) {
+  const res = await db.query('SELECT * FROM solicitacoes WHERE id = $1', [solicitacaoId]);
+  const original = res.rows[0];
   if (!original) throw Object.assign(new Error('Solicitação não encontrada.'), { status: 404 });
 
   const agora = new Date().toISOString();
-  const info = db.prepare(`
+  
+  const insertDuplicada = await db.query(`
     INSERT INTO solicitacoes
       (solicitante, placa, local, tipo, descricao, responsavel, observacoes, prioridade, status, data_abertura, criado_por_usuario_id)
-    VALUES (?, ?, ?, ?, ?, ?, ?, ?, 'Pendente', ?, ?)
-  `).run(
+    VALUES ($1, $2, $3, $4, $5, $6, $7, $8, 'Pendente', $9, $10)
+    RETURNING id
+  `, [
     original.solicitante, original.placa, original.local, original.tipo, original.descricao,
     original.responsavel, original.observacoes, original.prioridade, agora, usuarioAtual.id
-  );
+  ]);
 
-  db.prepare(`
+  const novoId = insertDuplicada.rows[0].id;
+
+  await db.query(`
     INSERT INTO historico (solicitacao_id, acao, usuario, detalhe, data)
-    VALUES (?, 'Criação', ?, ?, ?)
-  `).run(info.lastInsertRowid, usuarioAtual.nome, `Duplicado da solicitação #${original.id}`, agora);
+    VALUES ($1, 'Criação', $2, $3, $4)
+  `, [novoId, usuarioAtual.nome, `Duplicado da solicitação #${original.id}`, agora]);
 
-  return obterPorId(info.lastInsertRowid);
+  return await obterPorId(novoId);
 }
 
-function excluir(solicitacaoId, usuarioAtual) {
+// Convertida para async
+async function excluir(solicitacaoId, usuarioAtual) {
   if (usuarioAtual.papel !== 'Administrador') {
     throw Object.assign(new Error('Apenas Administradores podem excluir solicitações.'), { status: 403 });
   }
-  db.prepare('DELETE FROM solicitacoes WHERE id = ?').run(solicitacaoId);
+  await db.query('DELETE FROM solicitacoes WHERE id = $1', [solicitacaoId]);
 }
 
 module.exports = { obterTodas, obterPorId, criar, mudarStatus, duplicar, excluir, mapSolicitacao };

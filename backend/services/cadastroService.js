@@ -3,38 +3,50 @@
 
 const db = require('../db');
 
-function obterTipos() {
-  return db.prepare('SELECT * FROM tipos ORDER BY nome').all();
+// Convertida para async
+async function obterTipos() {
+  const res = await db.query('SELECT * FROM tipos ORDER BY nome');
+  return res.rows;
 }
 
-function obterLocais() {
-  return db.prepare('SELECT * FROM locais ORDER BY nome').all();
+// Convertida para async
+async function obterLocais() {
+  const res = await db.query('SELECT * FROM locais ORDER BY nome');
+  return res.rows;
 }
 
-function adicionarTipo(nome) {
+// Convertida para async
+async function adicionarTipo(nome) {
   nome = (nome || '').trim();
   if (!nome) return { ok: false, erro: 'Informe um nome.' };
-  const existe = db.prepare('SELECT 1 FROM tipos WHERE LOWER(nome) = LOWER(?)').get(nome);
-  if (existe) return { ok: false, erro: 'Esse tipo já existe.' };
-  db.prepare('INSERT INTO tipos (nome) VALUES (?)').run(nome);
+  
+  const existeRes = await db.query('SELECT 1 FROM tipos WHERE LOWER(nome) = LOWER($1)', [nome]);
+  if (existeRes.rows.length > 0) return { ok: false, erro: 'Esse tipo já existe.' };
+  
+  await db.query('INSERT INTO tipos (nome) VALUES ($1)', [nome]);
   return { ok: true };
 }
 
-function removerTipo(id) {
-  db.prepare('DELETE FROM tipos WHERE id = ?').run(id);
+// Convertida para async
+async function removerTipo(id) {
+  await db.query('DELETE FROM tipos WHERE id = $1', [id]);
 }
 
-function adicionarLocal(nome) {
+// Convertida para async
+async function adicionarLocal(nome) {
   nome = (nome || '').trim();
   if (!nome) return { ok: false, erro: 'Informe um nome.' };
-  const existe = db.prepare('SELECT 1 FROM locais WHERE LOWER(nome) = LOWER(?)').get(nome);
-  if (existe) return { ok: false, erro: 'Esse local já existe.' };
-  db.prepare('INSERT INTO locais (nome) VALUES (?)').run(nome);
+  
+  const existeRes = await db.query('SELECT 1 FROM locais WHERE LOWER(nome) = LOWER($1)', [nome]);
+  if (existeRes.rows.length > 0) return { ok: false, erro: 'Esse local já existe.' };
+  
+  await db.query('INSERT INTO locais (nome) VALUES ($1)', [nome]);
   return { ok: true };
 }
 
-function removerLocal(id) {
-  db.prepare('DELETE FROM locais WHERE id = ?').run(id);
+// Convertida para async
+async function removerLocal(id) {
+  await db.query('DELETE FROM locais WHERE id = $1', [id]);
 }
 
 module.exports = { obterTipos, obterLocais, adicionarTipo, removerTipo, adicionarLocal, removerLocal };

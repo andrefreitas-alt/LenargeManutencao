@@ -18,14 +18,18 @@ function mapUsuario(row) {
   };
 }
 
-function login(nomeUsuario, senha) {
+// Transformada em async
+async function login(nomeUsuario, senha) {
   if (!nomeUsuario || !nomeUsuario.trim() || !senha || !senha.trim()) {
     return { sucesso: false, erro: 'Preencha usuário e senha.' };
   }
 
-  const row = db.prepare(`
-    SELECT * FROM usuarios WHERE LOWER(nome_usuario) = LOWER(?)
-  `).get(nomeUsuario.trim());
+  // Ajustado para a sintaxe do Postgres ($1 e db.query)
+  const res = await db.query(`
+    SELECT * FROM usuarios WHERE LOWER(nome_usuario) = LOWER($1)
+  `, [nomeUsuario.trim()]);
+
+  const row = res.rows[0]; // O pacote 'pg' coloca os resultados dentro do array rows
 
   if (!row || !verifyPassword(senha, row.password_hash, row.password_salt)) {
     return { sucesso: false, erro: 'Usuário ou senha inválidos.' };
@@ -34,10 +38,9 @@ function login(nomeUsuario, senha) {
   return { sucesso: true, usuario: mapUsuario(row) };
 }
 
-// Autocadastro — sempre cria conta como Solicitante. Um Administrador só é
-// criado por outro Administrador já autenticado (ver Configurações →
-// Usuários), nunca por autocadastro.
-function cadastrarSolicitante({ nome, email, telefone, nomeUsuario, senha, confirmarSenha }) {
+// Autocadastro — sempre cria conta como Solicitante.
+// Transformada em async
+async function cadastrarSolicitante({ nome, email, telefone, nomeUsuario, senha, confirmarSenha }) {
   if (!nome?.trim() || !email?.trim() || !telefone?.trim() || !nomeUsuario?.trim() || !senha?.trim()) {
     return { sucesso: false, erro: 'Preencha todos os campos.' };
   }
@@ -58,29 +61,33 @@ function cadastrarSolicitante({ nome, email, telefone, nomeUsuario, senha, confi
     return { sucesso: false, erro: 'As senhas não coincidem.' };
   }
 
-  const usuarioExiste = db.prepare('SELECT 1 FROM usuarios WHERE LOWER(nome_usuario) = LOWER(?)').get(nomeUsuario.trim());
-  if (usuarioExiste) {
+  // Verificações adaptadas para async/await e sintaxe Postgres
+  const usuarioExisteRes = await db.query('SELECT 1 FROM usuarios WHERE LOWER(nome_usuario) = LOWER($1)', [nomeUsuario.trim()]);
+  if (usuarioExisteRes.rows.length > 0) {
     return { sucesso: false, erro: 'Esse usuário já existe, escolha outro.' };
   }
 
-  const emailExiste = db.prepare('SELECT 1 FROM usuarios WHERE LOWER(email) = LOWER(?)').get(email.trim());
-  if (emailExiste) {
+  const emailExisteRes = await db.query('SELECT 1 FROM usuarios WHERE LOWER(email) = LOWER($1)', [email.trim()]);
+  if (emailExisteRes.rows.length > 0) {
     return { sucesso: false, erro: 'Já existe uma conta com esse e-mail.' };
   }
 
   const telefoneDigits = onlyDigits(telefone);
-  const telefoneExiste = db.prepare('SELECT 1 FROM usuarios WHERE telefone = ?').get(telefoneDigits);
-  if (telefoneExiste) {
+  const telefoneExisteRes = await db.query('SELECT 1 FROM usuarios WHERE telefone = $1', [telefoneDigits]);
+  if (telefoneExisteRes.rows.length > 0) {
     return { sucesso: false, erro: 'Já existe uma conta com esse telefone.' };
   }
 
   const { hash, salt } = hashPassword(senha);
-  const info = db.prepare(`
-    INSERT INTO usuarios (nome, nome_usuario, email, telefone, password_hash, password_salt, papel, criado_em)
-    VALUES (?, ?, ?, ?, ?, ?, 'Solicitante', ?)
-  `).run(nome.trim(), nomeUsuario.trim(), email.trim(), telefoneDigits, hash, salt, new Date().toISOString());
 
-  const row = db.prepare('SELECT * FROM usuarios WHERE id = ?').get(info.lastInsertRowid);
+  // No Postgres, usamos RETURNING * para obter a linha inserida na hora!
+  const insertRes = await db.query(`
+    INSERT INTO usuarios (nome, nome_usuario, email, telefone, password_hash, password_salt, papel, criado_em)
+    VALUES ($1, $2, $3, $4, $5, $6, 'Solicitante', $7)
+    RETURNING *
+  `, [nome.trim(), nomeUsuario.trim(), email.trim(), telefoneDigits, hash, salt, new Date().toISOString()]);
+
+  const row = insertRes.rows[0];
   return { sucesso: true, usuario: mapUsuario(row) };
 }
 
