@@ -1,16 +1,19 @@
 // db.js
-// Configurado para conectar ao PostgreSQL rodando no Docker.
+// Configuração Universal (Suporta variáveis do Render ou fallback direto para a nuvem)
 const { Pool } = require('pg');
 const { hashPassword } = require('./services/passwordHasher');
 
-// Configuração da conexão com o Docker Desktop
+// 1. URL Direta da sua Nuvem no Render (Garantia caso a variável falhe)
+const URL_NUVEM = 'postgresql://admin:XVCuRcsv9vMk0dCZtkd5G7hPFy31UzbW@dpg-d98inci8qa3s73fj40q0-a/lenarge_db';
+
+// 2. Se houver DATABASE_URL no ambiente, ele usa. Se não, força a URL da nuvem.
+// Removido completamente o 'localhost' ou '127.0.0.1' para evitar erros na nuvem.
 const pool = new Pool({
-  host: 'localhost',
-  port: 5432,
-  user: 'postgres',
-  password: 'suasenha', // <-- COLOQUE AQUI A SENHA QUE VOCÊ USOU NO DOCKER
-  database: 'postgres',
+  connectionString: process.env.DATABASE_URL || URL_NUVEM,
+  ssl: { rejectUnauthorized: false } // Obrigatório para conexões seguras no Render
 });
+
+console.log("==> Conectando ao Banco de Dados Postgres via URL remota...");
 
 async function migrate() {
   const client = await pool.connect();
