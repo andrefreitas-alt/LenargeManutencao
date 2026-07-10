@@ -210,14 +210,6 @@ textarea { resize: vertical; min-height: 70px; }
   width: calc(100% - var(--sidebar-width));
   box-sizing: border-box;
 }
-
-.main-content {
-    margin-left: 260px; /* Deve ser exatamente igual à largura da sidebar */
-    padding: 20px;
-    width: calc(100% - 260px);
-    box-sizing: border-box;
-}
-
 .topbar {
   background: var(--surface);
   border-bottom: 1px solid var(--border);
