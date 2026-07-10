@@ -1,23 +1,16 @@
 // db.js
-// Configurado para conectar dinamicamente ao PostgreSQL (Docker ou Render)
+// Configurado para conectar ao PostgreSQL rodando no Docker.
 const { Pool } = require('pg');
 const { hashPassword } = require('./services/passwordHasher');
 
-// Configuração dinâmica: prioriza o Render se a DATABASE_URL existir
-const pool = new Pool(
-  process.env.DATABASE_URL
-    ? {
-        connectionString: process.env.DATABASE_URL,
-        ssl: { rejectUnauthorized: false } // Exigido pelo Render para conexões em produção
-      }
-    : {
-        host: 'localhost',
-        port: 5432,
-        user: 'postgres',
-        password: 'suasenha', // <-- COLOQUE AQUI A SUA SENHA LOCAL DO DOCKER
-        database: 'postgres',
-      }
-);
+// Configuração da conexão com o Docker Desktop
+const pool = new Pool({
+  host: 'localhost',
+  port: 5432,
+  user: 'postgres',
+  password: 'suasenha', // <-- COLOQUE AQUI A SENHA QUE VOCÊ USOU NO DOCKER
+  database: 'postgres',
+});
 
 async function migrate() {
   const client = await pool.connect();
@@ -62,7 +55,7 @@ async function migrate() {
         data_abertura         TEXT NOT NULL,
         data_inicio           TEXT,
         data_conclusao        TEXT,
-        criado_by_usuario_id INTEGER NOT NULL REFERENCES usuarios(id)
+        criado_por_usuario_id INTEGER NOT NULL REFERENCES usuarios(id)
       );
 
       CREATE TABLE IF NOT EXISTS historico (
