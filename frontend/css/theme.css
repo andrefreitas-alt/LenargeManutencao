@@ -16,7 +16,7 @@
   --success: #137A3A;
   --warning: #9A5B00;
   --danger: #B3141C;
-  --font: "Segoe UI Variable", "Segoe UI", -apple-system, Arial, sans-serif;
+  --font: "Inter", "Segoe UI Variable", "Segoe UI", -apple-system, Arial, sans-serif;
   --sidebar-width: 250px;
 }
 
@@ -28,9 +28,12 @@ body {
   background: var(--bg);
   color: var(--text);
   font-size: 14px;
+  -webkit-font-smoothing: antialiased;
 }
 
 button { font-family: var(--font); }
+
+h1, h2, h3 { letter-spacing: -0.01em; }
 
 .hidden { display: none !important; }
 
@@ -117,7 +120,9 @@ textarea { resize: vertical; min-height: 70px; }
   display: flex;
   align-items: center;
   justify-content: center;
-  background: var(--sidebar-bg);
+  background: linear-gradient(180deg, #1c1616 0%, var(--sidebar-bg) 60%);
+  position: relative;
+  overflow: hidden;
 }
 
 .auth-card {
@@ -126,8 +131,12 @@ textarea { resize: vertical; min-height: 70px; }
   padding: 36px 32px;
   width: 100%;
   max-width: 380px;
-  box-shadow: 0 20px 50px rgba(0,0,0,0.3);
+  box-shadow: 0 25px 60px rgba(0,0,0,0.45);
+  position: relative;
+  z-index: 5;
 }
+.auth-card h1 { font-size: 19px; font-weight: 700; margin-bottom: 18px; }
+
 .auth-logo {
   display: flex;
   justify-content: center;
@@ -138,6 +147,63 @@ textarea { resize: vertical; min-height: 70px; }
   width: auto;
   max-width: 100%;
   object-fit: contain;
+}
+
+/* ===================== CENA DE ESTRADA ANIMADA (fundo do login) ===================== */
+.road-scene {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  overflow: hidden;
+}
+.road-sky {
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 78%;
+  background: radial-gradient(ellipse at 50% 0%, rgba(237,27,36,0.10), transparent 60%);
+}
+.road-ground {
+  position: absolute;
+  bottom: 0; left: 0; right: 0;
+  height: 22%;
+  background: #0c0a0a;
+  border-top: 2px solid rgba(255,255,255,0.06);
+}
+.road-line {
+  position: absolute;
+  bottom: 11%;
+  left: 0; right: 0;
+  height: 3px;
+  background: repeating-linear-gradient(90deg, rgba(255,255,255,0.25) 0 40px, transparent 40px 80px);
+  animation: road-scroll 2.2s linear infinite;
+}
+@keyframes road-scroll {
+  from { background-position-x: 0; }
+  to { background-position-x: -80px; }
+}
+
+.truck {
+  position: absolute;
+  width: 110px;
+  height: auto;
+  bottom: 8%;
+  opacity: 0.85;
+  filter: drop-shadow(0 6px 8px rgba(0,0,0,0.4));
+  animation-name: drive-across;
+  animation-timing-function: linear;
+  animation-iteration-count: infinite;
+}
+.truck-1 { bottom: 9%; width: 120px; animation-duration: 14s; animation-delay: 0s; }
+.truck-2 { bottom: 5%; width: 90px; opacity: 0.6; animation-duration: 19s; animation-delay: 4s; }
+.truck-3 { bottom: 13%; width: 80px; opacity: 0.5; animation-duration: 23s; animation-delay: 9s; }
+
+@keyframes drive-across {
+  from { transform: translateX(-160px); }
+  to { transform: translateX(110vw); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .road-line, .truck { animation: none; }
 }
 
 /* ===================== SIDEBAR ===================== */
@@ -264,7 +330,7 @@ textarea { resize: vertical; min-height: 70px; }
   border-bottom: 1px solid var(--border);
   padding: 18px 28px;
 }
-.topbar h2 { margin: 0; font-size: 20px; }
+.topbar h2 { margin: 0; font-size: 20px; font-weight: 700; }
 
 .view-content { padding: 24px 28px; overflow-y: auto; }
 
