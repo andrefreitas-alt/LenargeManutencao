@@ -6,7 +6,6 @@ const cadastroService = require('../services/cadastroService');
 
 router.use(requireAuth);
 
-// Obter tipos (Adicionado async/await)
 router.get('/tipos', async (req, res) => {
   try {
     const itens = await cadastroService.obterTipos();
@@ -17,12 +16,12 @@ router.get('/tipos', async (req, res) => {
   }
 });
 
-// Adicionar tipo (Adicionado async/await)
 router.post('/tipos', requireAdmin, async (req, res) => {
   try {
-    const resultado = await cadastroService.adicionarTipo(req.body.nome);
+    const nome = (req.body.nome || '').trim().toUpperCase();
+    const resultado = await cadastroService.adicionarTipo(nome);
     if (!resultado.ok) return res.status(400).json({ erro: resultado.erro });
-    
+
     const itensAtualizados = await cadastroService.obterTipos();
     res.status(201).json({ itens: itensAtualizados });
   } catch (err) {
@@ -31,7 +30,6 @@ router.post('/tipos', requireAdmin, async (req, res) => {
   }
 });
 
-// Remover tipo (Adicionado async/await)
 router.delete('/tipos/:id', requireAdmin, async (req, res) => {
   try {
     await cadastroService.removerTipo(Number(req.params.id));
@@ -43,7 +41,6 @@ router.delete('/tipos/:id', requireAdmin, async (req, res) => {
   }
 });
 
-// Obter locais (Adicionado async/await)
 router.get('/locais', async (req, res) => {
   try {
     const itens = await cadastroService.obterLocais();
@@ -54,12 +51,12 @@ router.get('/locais', async (req, res) => {
   }
 });
 
-// Adicionar local (Adicionado async/await)
 router.post('/locais', requireAdmin, async (req, res) => {
   try {
-    const resultado = await cadastroService.adicionarLocal(req.body.nome);
+    const nome = (req.body.nome || '').trim().toUpperCase();
+    const resultado = await cadastroService.adicionarLocal(nome);
     if (!resultado.ok) return res.status(400).json({ erro: resultado.erro });
-    
+
     const itensAtualizados = await cadastroService.obterLocais();
     res.status(201).json({ itens: itensAtualizados });
   } catch (err) {
@@ -68,7 +65,6 @@ router.post('/locais', requireAdmin, async (req, res) => {
   }
 });
 
-// Remover local (Adicionado async/await)
 router.delete('/locais/:id', requireAdmin, async (req, res) => {
   try {
     await cadastroService.removerLocal(Number(req.params.id));

@@ -47,14 +47,14 @@ router.post('/', async (req, res) => {
     }
 
     const nova = {
-      solicitante: solicitante.trim(),
+      solicitante: solicitante.trim().toUpperCase(),
       placa: (placa || '').trim().toUpperCase(),
       local,
       tipo,
-      descricao: (descricao || '').trim(),
-      responsavel: (responsavel || '').trim(),
+      descricao: (descricao || '').trim().toUpperCase(),
+      responsavel: (responsavel || '').trim().toUpperCase(),
       prioridade: prioridade || 'Media',
-      observacoes: (observacoes || '').trim(),
+      observacoes: (observacoes || '').trim().toUpperCase(),
       dataAgendada
     };
 

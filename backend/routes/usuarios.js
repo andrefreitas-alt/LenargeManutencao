@@ -6,7 +6,6 @@ const usuarioService = require('../services/usuarioService');
 
 router.use(requireAdmin);
 
-// Obter todos (Adicionado async/await e try/catch)
 router.get('/', async (req, res) => {
   try {
     const itens = await usuarioService.obterTodos();
@@ -17,12 +16,14 @@ router.get('/', async (req, res) => {
   }
 });
 
-// Criar usuário (Adicionado async/await e try/catch)
 router.post('/', async (req, res) => {
   try {
     const { nome, nomeUsuario, email, telefone, senha, papel } = req.body;
-    const resultado = await usuarioService.criar({ nome, nomeUsuario, email, telefone, senha, papel });
-    
+    const resultado = await usuarioService.criar({
+      nome: (nome || '').trim().toUpperCase(),
+      nomeUsuario, email, telefone, senha, papel
+    });
+
     if (!resultado.sucesso) return res.status(400).json({ erro: resultado.erro });
     res.status(201).json({ usuario: resultado.usuario });
   } catch (err) {
@@ -31,7 +32,6 @@ router.post('/', async (req, res) => {
   }
 });
 
-// Redefinir senha (Adicionado async/await)
 router.post('/:id/senha', async (req, res) => {
   try {
     const resultado = await usuarioService.redefinirSenha(Number(req.params.id), req.body.novaSenha);
@@ -43,7 +43,6 @@ router.post('/:id/senha', async (req, res) => {
   }
 });
 
-// Excluir usuário (Adicionado async/await)
 router.delete('/:id', async (req, res) => {
   try {
     const resultado = await usuarioService.excluir(Number(req.params.id), req.session.usuario.id);

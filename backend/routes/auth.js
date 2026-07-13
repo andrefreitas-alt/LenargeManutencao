@@ -3,11 +3,9 @@ const express = require('express');
 const router = express.Router();
 const authService = require('../services/authService');
 
-// Adicionado 'async' na rota de login
 router.post('/login', async (req, res) => {
   try {
     const { nomeUsuario, senha } = req.body;
-    // Adicionado 'await' para aguardar a resposta do banco
     const resultado = await authService.login(nomeUsuario, senha);
 
     if (!resultado.sucesso) {
@@ -22,12 +20,17 @@ router.post('/login', async (req, res) => {
   }
 });
 
-// Adicionado 'async' na rota de cadastro
 router.post('/signup', async (req, res) => {
   try {
     const { nome, email, telefone, nomeUsuario, senha, confirmarSenha } = req.body;
-    // Adicionado 'await' aqui também
-    const resultado = await authService.cadastrarSolicitante({ nome, email, telefone, nomeUsuario, senha, confirmarSenha });
+    const resultado = await authService.cadastrarSolicitante({
+      nome: (nome || '').trim().toUpperCase(),
+      email,
+      telefone,
+      nomeUsuario,
+      senha,
+      confirmarSenha
+    });
 
     if (!resultado.sucesso) {
       return res.status(400).json({ erro: resultado.erro });
