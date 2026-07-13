@@ -5,9 +5,7 @@ const solicitacaoService = require('./solicitacaoService');
 const cadastroService = require('./cadastroService');
 const { STATUS_DISPLAY } = require('./enums');
 
-// Adicionado async na função principal
 async function obterDashboard(usuarioAtual) {
-  // Adicionado await para esperar os dados assíncronos do banco PostgreSQL
   const solicitacoes = await solicitacaoService.obterTodas(usuarioAtual);
 
   const total = solicitacoes.length;
@@ -22,7 +20,7 @@ async function obterDashboard(usuarioAtual) {
     ? `${(temposResolucao.reduce((a, b) => a + b, 0) / temposResolucao.length).toFixed(1)}h`
     : '—';
 
-  // Por mês (últimos 6 meses)
+  // Por mês (últimos 6 meses) — agora baseado na DATA AGENDADA, não na data de abertura
   const hoje = new Date();
   const meses = [];
   for (let i = 5; i >= 0; i--) {
@@ -34,19 +32,17 @@ async function obterDashboard(usuarioAtual) {
     labels: meses.map(m => nomesMes[m.getMonth()]),
     valores: meses.map(m =>
       solicitacoes.filter(s => {
-        const dt = new Date(s.dataAbertura);
+        const dt = new Date(s.dataAgendada);
         return dt.getFullYear() === m.getFullYear() && dt.getMonth() === m.getMonth();
       }).length
     )
   };
 
-  // Por status
   const statusOrdenados = ['Pendente', 'EmAndamento', 'AguardandoPeca', 'Concluido', 'Cancelado'];
   const porStatus = statusOrdenados
     .map(st => ({ status: st, label: STATUS_DISPLAY[st], valor: solicitacoes.filter(s => s.status === st).length }))
     .filter(x => x.valor > 0);
 
-  // Por tipo (Adicionado await se o cadastroService também buscar do banco)
   const listaTipos = await cadastroService.obterTipos();
   const tipos = listaTipos.map(t => t.nome);
   const porTipo = {
@@ -54,7 +50,6 @@ async function obterDashboard(usuarioAtual) {
     valores: tipos.map(tipo => solicitacoes.filter(s => s.tipo === tipo).length)
   };
 
-  // Por local (Adicionado await se o cadastroService também buscar do banco)
   const listaLocais = await cadastroService.obterLocais();
   const locais = listaLocais.map(l => l.nome);
   const porLocal = {
@@ -62,7 +57,6 @@ async function obterDashboard(usuarioAtual) {
     valores: locais.map(local => solicitacoes.filter(s => s.local === local).length)
   };
 
-  // Tempo médio por responsável
   const responsaveis = [...new Set(solicitacoes.map(s => s.responsavel).filter(r => r && r.trim()))].sort();
   const tempoPorResponsavel = {
     labels: responsaveis,

@@ -39,11 +39,11 @@ const ListaSolicitacoes = {
           <select id="filtro-local">${opcoesLocal}</select>
         </div>
         <div class="field">
-          <label>De</label>
+          <label>Agendado de</label>
           <input type="date" id="filtro-data-inicial">
         </div>
         <div class="field">
-          <label>Até</label>
+          <label>Agendado até</label>
           <input type="date" id="filtro-data-final">
         </div>
       </div>
@@ -51,7 +51,7 @@ const ListaSolicitacoes = {
         <thead>
           <tr>
             <th>#</th><th>Solicitante</th><th>Placa</th><th>Tipo</th><th>Local</th>
-            <th>Prioridade</th><th>Status</th><th>Aberto em</th>
+            <th>Prioridade</th><th>Status</th><th>Agendado para</th>
           </tr>
         </thead>
         <tbody id="lista-tbody"></tbody>
@@ -84,8 +84,8 @@ const ListaSolicitacoes = {
     if (status !== 'Todos') itens = itens.filter(s => s.status === status);
     if (tipo !== 'Todos') itens = itens.filter(s => s.tipo === tipo);
     if (local !== 'Todos') itens = itens.filter(s => s.local === local);
-    if (dataInicial) itens = itens.filter(s => new Date(s.dataAbertura) >= new Date(dataInicial));
-    if (dataFinal) itens = itens.filter(s => new Date(s.dataAbertura) <= new Date(dataFinal + 'T23:59:59'));
+    if (dataInicial) itens = itens.filter(s => new Date(s.dataAgendada) >= new Date(dataInicial));
+    if (dataFinal) itens = itens.filter(s => new Date(s.dataAgendada) <= new Date(dataFinal + 'T23:59:59'));
 
     const tbody = document.getElementById('lista-tbody');
     if (itens.length === 0) {
@@ -102,7 +102,7 @@ const ListaSolicitacoes = {
         <td>${s.local || '—'}</td>
         <td><span class="badge badge-prioridade ${PRIORIDADE_CLASS[s.prioridade]}">${prioridadeDisplay(s.prioridade)}</span></td>
         <td><span class="badge ${STATUS_BADGE_CLASS[s.status]}">${statusDisplay(s.status)}</span></td>
-        <td>${formatarData(s.dataAbertura)}</td>
+        <td>${formatarData(s.dataAgendada)}</td>
       </tr>
     `).join('');
 

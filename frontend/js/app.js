@@ -4,6 +4,8 @@
 const App = {
   usuario: null,
   viewAtual: 'dashboard',
+  _pollTimer: null,
+  _novasVistas: new Set(JSON.parse(localStorage.getItem('novasVistasIds') || '[]')),
 
   async init() {
     try {
@@ -16,6 +18,17 @@ const App = {
     document.querySelectorAll('.nav-item').forEach(el => {
       el.addEventListener('click', () => this.navigate(el.dataset.view));
     });
+
+    const toggleBtn = document.getElementById('sidebar-toggle');
+    if (toggleBtn) {
+      const collapsed = localStorage.getItem('sidebarCollapsed') === '1';
+      document.getElementById('app-shell').classList.toggle('sidebar-collapsed', collapsed);
+      toggleBtn.addEventListener('click', () => {
+        const shell = document.getElementById('app-shell');
+        const isCollapsed = shell.classList.toggle('sidebar-collapsed');
+        localStorage.setItem('sidebarCollapsed', isCollapsed ? '1' : '0');
+      });
+    }
   },
 
   mostrarTela(id) {
@@ -32,19 +45,25 @@ const App = {
     document.getElementById('user-role').textContent = usuario.papel;
     document.getElementById('user-avatar').textContent = (usuario.nome || '?').charAt(0).toUpperCase();
     document.getElementById('nav-config').classList.toggle('hidden', !isAdmin);
+    document.getElementById('nav-novas').classList.toggle('hidden', !isAdmin);
 
     this.mostrarTela('app-shell');
     this.navigate('dashboard');
+
+    if (isAdmin) {
+      this._seedNovasVistasEIniciarPolling();
+    }
   },
 
   encerrarSessao() {
     this.usuario = null;
+    this._pararPolling();
     document.getElementById('login-form').reset();
     this.mostrarTela('login-screen');
   },
 
   async navigate(destino) {
-    if (destino === 'config' && this.usuario.papel !== 'Administrador') destino = 'dashboard';
+    if ((destino === 'config' || destino === 'novas') && this.usuario.papel !== 'Administrador') destino = 'dashboard';
 
     this.viewAtual = destino;
 
@@ -52,7 +71,7 @@ const App = {
       el.classList.toggle('active', el.dataset.view === destino);
     });
 
-    const titulos = { dashboard: 'Dashboard', nova: 'Nova solicitacao', lista: 'Pesquisar / Lista', config: 'Configuracoes' };
+    const titulos = { dashboard: 'Dashboard', nova: 'Nova solicitacao', lista: 'Pesquisar / Lista', novas: 'Novas Solicitações', config: 'Configuracoes' };
     document.getElementById('view-title').textContent = titulos[destino] || 'Dashboard';
 
     const container = document.getElementById('view-content');
@@ -62,6 +81,7 @@ const App = {
       switch (destino) {
         case 'nova': await NovaSolicitacao.render(container); break;
         case 'lista': await ListaSolicitacoes.render(container); break;
+        case 'novas': await NovasSolicitacoes.render(container); break;
         case 'config': await Config.render(container); break;
         default: await Dashboard.render(container); break;
       }
@@ -72,6 +92,76 @@ const App = {
 
   recarregarViewAtual() {
     this.navigate(this.viewAtual);
+  },
+
+  // ===================== NOTIFICAÇÃO DE NOVOS CHAMADOS (SÓ ADMIN) =====================
+
+  async _seedNovasVistasEIniciarPolling() {
+    try {
+      const { itens } = await Api.get('/api/solicitacoes');
+      const pendentesIds = itens.filter(s => s.status === 'Pendente').map(s => s.id);
+
+      // Primeira vez nesse navegador: marca os pendentes atuais como "já vistos", sem popup
+      if (this._novasVistas.size === 0 && pendentesIds.length > 0) {
+        pendentesIds.forEach(id => this._novasVistas.add(id));
+        localStorage.setItem('novasVistasIds', JSON.stringify([...this._novasVistas]));
+      }
+      this._atualizarBadgeNovas(pendentesIds.length);
+    } catch (_) { /* ignora falha inicial, o polling tenta de novo */ }
+
+    this._iniciarPolling();
+  },
+
+  _iniciarPolling() {
+    this._pararPolling();
+    this._pollTimer = setInterval(() => this._verificarNovasSolicitacoes(), 25000);
+  },
+
+  _pararPolling() {
+    if (this._pollTimer) { clearInterval(this._pollTimer); this._pollTimer = null; }
+  },
+
+  async _verificarNovasSolicitacoes() {
+    try {
+      const { itens } = await Api.get('/api/solicitacoes');
+      const pendentes = itens.filter(s => s.status === 'Pendente');
+
+      this._atualizarBadgeNovas(pendentes.length);
+
+      const novas = pendentes.filter(s => !this._novasVistas.has(s.id));
+      novas.forEach(s => {
+        this._novasVistas.add(s.id);
+        this._mostrarPopupNovoChamado(s);
+      });
+      if (novas.length > 0) {
+        localStorage.setItem('novasVistasIds', JSON.stringify([...this._novasVistas]));
+      }
+    } catch (_) { /* silencioso, a próxima verificação tenta de novo */ }
+  },
+
+  _atualizarBadgeNovas(qtd) {
+    const badge = document.getElementById('novas-badge');
+    if (!badge) return;
+    if (qtd > 0) {
+      badge.textContent = qtd;
+      badge.classList.remove('hidden');
+    } else {
+      badge.classList.add('hidden');
+    }
+  },
+
+  _mostrarPopupNovoChamado(item) {
+    const root = document.getElementById('toast-root');
+    if (!root) return;
+    const toast = document.createElement('div');
+    toast.className = 'toast';
+    toast.innerHTML = `
+      <div class="toast-title">🆕 Novo chamado #${item.id}</div>
+      <div class="toast-body">${item.solicitante || 'Solicitante'} — ${item.tipo || ''}</div>
+    `;
+    toast.addEventListener('click', () => { this.navigate('novas'); toast.remove(); });
+    root.appendChild(toast);
+    setTimeout(() => toast.remove(), 8000);
   }
 };
 

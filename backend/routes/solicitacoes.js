@@ -6,7 +6,6 @@ const solicitacaoService = require('../services/solicitacaoService');
 
 router.use(requireAuth);
 
-// Lista (Adicionado async/await e try/catch)
 router.get('/', async (req, res) => {
   try {
     const itens = await solicitacaoService.obterTodas(req.session.usuario);
@@ -17,13 +16,11 @@ router.get('/', async (req, res) => {
   }
 });
 
-// Buscar por ID (Adicionado async/await e try/catch)
 router.get('/:id', async (req, res) => {
   try {
     const item = await solicitacaoService.obterPorId(Number(req.params.id));
     if (!item) return res.status(404).json({ erro: 'Solicitação não encontrada.' });
 
-    // Solicitante só pode ver o detalhe da própria solicitação
     if (req.session.usuario.papel === 'Solicitante' && item.criadoPorUsuarioId !== req.session.usuario.id) {
       return res.status(403).json({ erro: 'Você não tem permissão para ver mais informações desta solicitação.' });
     }
@@ -35,16 +32,18 @@ router.get('/:id', async (req, res) => {
   }
 });
 
-// Criar Solicitação (Adicionado async/await)
 router.post('/', async (req, res) => {
   try {
-    const { solicitante, placa, local, tipo, descricao, responsavel, prioridade, observacoes } = req.body;
+    const { solicitante, placa, local, tipo, descricao, responsavel, prioridade, observacoes, dataAgendada } = req.body;
 
     if (!solicitante || !solicitante.trim()) {
       return res.status(400).json({ erro: 'Informe o nome do solicitante.' });
     }
     if (!local || !tipo) {
       return res.status(400).json({ erro: 'Selecione o local e o tipo da solicitação.' });
+    }
+    if (!dataAgendada) {
+      return res.status(400).json({ erro: 'Informe a data e o horário agendados para a manutenção.' });
     }
 
     const nova = {
@@ -55,7 +54,8 @@ router.post('/', async (req, res) => {
       descricao: (descricao || '').trim(),
       responsavel: (responsavel || '').trim(),
       prioridade: prioridade || 'Media',
-      observacoes: (observacoes || '').trim()
+      observacoes: (observacoes || '').trim(),
+      dataAgendada
     };
 
     const criada = await solicitacaoService.criar(nova, req.session.usuario);
@@ -66,7 +66,6 @@ router.post('/', async (req, res) => {
   }
 });
 
-// Mudar Status (Adicionado async/await)
 router.post('/:id/status', async (req, res) => {
   try {
     const item = await solicitacaoService.mudarStatus(Number(req.params.id), req.body.status, req.session.usuario);
@@ -76,7 +75,6 @@ router.post('/:id/status', async (req, res) => {
   }
 });
 
-// Cancelar (Adicionado async/await)
 router.post('/:id/cancelar', async (req, res) => {
   try {
     const item = await solicitacaoService.mudarStatus(Number(req.params.id), 'Cancelado', req.session.usuario);
@@ -86,7 +84,6 @@ router.post('/:id/cancelar', async (req, res) => {
   }
 });
 
-// Duplicar (Adicionado async/await)
 router.post('/:id/duplicar', async (req, res) => {
   try {
     const item = await solicitacaoService.duplicar(Number(req.params.id), req.session.usuario);
@@ -96,7 +93,6 @@ router.post('/:id/duplicar', async (req, res) => {
   }
 });
 
-// Excluir (Adicionado async/await)
 router.delete('/:id', async (req, res) => {
   try {
     await solicitacaoService.excluir(Number(req.params.id), req.session.usuario);

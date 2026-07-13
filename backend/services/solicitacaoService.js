@@ -23,6 +23,7 @@ function mapSolicitacao(row) {
     prioridade: row.prioridade,
     status: row.status,
     dataAbertura: row.data_abertura,
+    dataAgendada: row.data_agendada,
     dataInicio: row.data_inicio,
     dataConclusao: row.data_conclusao,
     criadoPorUsuarioId: row.criado_por_usuario_id,
@@ -30,19 +31,18 @@ function mapSolicitacao(row) {
   };
 }
 
-// Convertida para async
 async function carregarHistorico(solicitacaoId) {
   const res = await db.query('SELECT * FROM historico WHERE solicitacao_id = $1 ORDER BY data DESC', [solicitacaoId]);
   return res.rows.map(h => ({ id: h.id, acao: h.acao, usuario: h.usuario, detalhe: h.detalhe, data: h.data }));
 }
 
-// Agora todos os papéis (Administrador e Solicitante) veem todas as solicitações
+// Todos os papéis (Administrador e Solicitante) veem todas as solicitações,
+// ordenadas pela data agendada (mais próxima primeiro)
 async function obterTodas(usuarioAtual) {
-  const res = await db.query('SELECT * FROM solicitacoes ORDER BY data_abertura DESC');
+  const res = await db.query('SELECT * FROM solicitacoes ORDER BY data_agendada ASC');
   return res.rows.map(mapSolicitacao);
 }
 
-// Convertida para async
 async function obterPorId(id) {
   const res = await db.query('SELECT * FROM solicitacoes WHERE id = $1', [id]);
   const row = res.rows[0];
@@ -52,19 +52,17 @@ async function obterPorId(id) {
   return item;
 }
 
-// Convertida para async
 async function criar(nova, usuarioAtual) {
   const agora = new Date().toISOString();
 
-  // No Postgres, usamos RETURNING id para pegar o ID gerado
   const insertSolicitacao = await db.query(`
     INSERT INTO solicitacoes
-      (solicitante, placa, local, tipo, descricao, responsavel, observacoes, prioridade, status, data_abertura, criado_por_usuario_id)
-    VALUES ($1, $2, $3, $4, $5, $6, $7, $8, 'Pendente', $9, $10)
+      (solicitante, placa, local, tipo, descricao, responsavel, observacoes, prioridade, status, data_abertura, data_agendada, criado_por_usuario_id)
+    VALUES ($1, $2, $3, $4, $5, $6, $7, $8, 'Pendente', $9, $10, $11)
     RETURNING id
   `, [
     nova.solicitante, nova.placa, nova.local, nova.tipo, nova.descricao,
-    nova.responsavel, nova.observacoes, nova.prioridade, agora, usuarioAtual.id
+    nova.responsavel, nova.observacoes, nova.prioridade, agora, nova.dataAgendada, usuarioAtual.id
   ]);
 
   const novoId = insertSolicitacao.rows[0].id;
@@ -77,7 +75,6 @@ async function criar(nova, usuarioAtual) {
   return await obterPorId(novoId);
 }
 
-// Convertida para async
 async function mudarStatus(solicitacaoId, novoStatus, usuarioAtual) {
   if (usuarioAtual.papel !== 'Administrador') {
     throw Object.assign(new Error('Apenas Administradores podem alterar o status.'), { status: 403 });
@@ -105,7 +102,6 @@ async function mudarStatus(solicitacaoId, novoStatus, usuarioAtual) {
   return await obterPorId(solicitacaoId);
 }
 
-// Convertida para async
 async function duplicar(solicitacaoId, usuarioAtual) {
   const res = await db.query('SELECT * FROM solicitacoes WHERE id = $1', [solicitacaoId]);
   const original = res.rows[0];
@@ -115,12 +111,12 @@ async function duplicar(solicitacaoId, usuarioAtual) {
 
   const insertDuplicada = await db.query(`
     INSERT INTO solicitacoes
-      (solicitante, placa, local, tipo, descricao, responsavel, observacoes, prioridade, status, data_abertura, criado_por_usuario_id)
-    VALUES ($1, $2, $3, $4, $5, $6, $7, $8, 'Pendente', $9, $10)
+      (solicitante, placa, local, tipo, descricao, responsavel, observacoes, prioridade, status, data_abertura, data_agendada, criado_por_usuario_id)
+    VALUES ($1, $2, $3, $4, $5, $6, $7, $8, 'Pendente', $9, $10, $11)
     RETURNING id
   `, [
     original.solicitante, original.placa, original.local, original.tipo, original.descricao,
-    original.responsavel, original.observacoes, original.prioridade, agora, usuarioAtual.id
+    original.responsavel, original.observacoes, original.prioridade, agora, original.data_agendada, usuarioAtual.id
   ]);
 
   const novoId = insertDuplicada.rows[0].id;
@@ -133,7 +129,6 @@ async function duplicar(solicitacaoId, usuarioAtual) {
   return await obterPorId(novoId);
 }
 
-// Convertida para async
 async function excluir(solicitacaoId, usuarioAtual) {
   if (usuarioAtual.papel !== 'Administrador') {
     throw Object.assign(new Error('Apenas Administradores podem excluir solicitações.'), { status: 403 });

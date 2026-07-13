@@ -17,6 +17,7 @@
   --warning: #9A5B00;
   --danger: #B3141C;
   --font: "Segoe UI Variable", "Segoe UI", -apple-system, Arial, sans-serif;
+  --sidebar-width: 250px;
 }
 
 * { box-sizing: border-box; }
@@ -85,7 +86,7 @@ label {
   margin-bottom: 6px;
 }
 
-input[type="text"], input[type="password"], input[type="email"], input[type="date"],
+input[type="text"], input[type="password"], input[type="email"], input[type="date"], input[type="time"],
 select, textarea {
   width: 100%;
   padding: 10px 9px;
@@ -138,10 +139,8 @@ textarea { resize: vertical; min-height: 70px; }
   max-width: 100%;
   object-fit: contain;
 }
-:root {
-  --sidebar-width: 250px;
-}
 
+/* ===================== SIDEBAR ===================== */
 .sidebar {
   width: var(--sidebar-width);
   background-color: var(--sidebar-bg);
@@ -154,6 +153,7 @@ textarea { resize: vertical; min-height: 70px; }
   top: 0;
   z-index: 1000;
   overflow: hidden;
+  transition: width 0.2s ease;
 }
 
 .sidebar-logo {
@@ -165,8 +165,22 @@ textarea { resize: vertical; min-height: 70px; }
   margin-bottom: 8px;
 }
 .sidebar-logo img { height: 28px; width: auto; object-fit: contain; }
-.sidebar-logo span { display: none; } /* a imagem já tem "LENARGE" escrito, texto duplicado removido */
+.sidebar-logo span { display: none; }
 .logo-fallback { display: none; color: #fff; font-weight: 700; font-size: 15px; }
+
+.sidebar-toggle {
+  margin-left: auto;
+  background: transparent;
+  border: none;
+  color: var(--sidebar-text);
+  cursor: pointer;
+  font-size: 18px;
+  line-height: 1;
+  padding: 4px 8px;
+  border-radius: 4px;
+  flex-shrink: 0;
+}
+.sidebar-toggle:hover { background: rgba(255,255,255,0.08); color: #fff; }
 
 .nav-list {
   flex: 1;
@@ -188,6 +202,17 @@ textarea { resize: vertical; min-height: 70px; }
 }
 .nav-item:hover { background: rgba(255,255,255,0.05); }
 .nav-item.active { background: rgba(237,27,36,0.15); color: #fff; border-left-color: var(--primary); }
+.nav-icon { flex-shrink: 0; }
+.nav-label { flex: 1; }
+
+.badge-count {
+  background: var(--primary);
+  color: #fff;
+  font-size: 11px;
+  font-weight: 700;
+  padding: 1px 7px;
+  border-radius: 10px;
+}
 
 .sidebar-user {
   flex-shrink: 0;
@@ -214,11 +239,25 @@ textarea { resize: vertical; min-height: 70px; }
 .logout-link { margin-left: auto; cursor: pointer; color: var(--sidebar-text); font-size: 12px; }
 .logout-link:hover { color: #fff; }
 
+/* ===================== SIDEBAR RETRÁTIL ===================== */
+#app-shell.sidebar-collapsed .sidebar { width: 72px; }
+#app-shell.sidebar-collapsed .main-content { margin-left: 72px; width: calc(100% - 72px); }
+#app-shell.sidebar-collapsed .sidebar-logo { justify-content: center; padding: 16px 8px; }
+#app-shell.sidebar-collapsed .sidebar-logo img { display: none; }
+#app-shell.sidebar-collapsed .nav-label { display: none; }
+#app-shell.sidebar-collapsed .nav-item { justify-content: center; padding: 11px 0; gap: 0; }
+#app-shell.sidebar-collapsed .badge-count { display: none; }
+#app-shell.sidebar-collapsed .sidebar-user { justify-content: center; padding: 16px 8px; }
+#app-shell.sidebar-collapsed .sidebar-user-name,
+#app-shell.sidebar-collapsed .sidebar-user-role,
+#app-shell.sidebar-collapsed .logout-link { display: none; }
+
 .main-content {
   margin-left: var(--sidebar-width);
   padding: 20px;
   width: calc(100% - var(--sidebar-width));
   box-sizing: border-box;
+  transition: margin-left 0.2s ease, width 0.2s ease;
 }
 .topbar {
   background: var(--surface);
@@ -228,6 +267,34 @@ textarea { resize: vertical; min-height: 70px; }
 .topbar h2 { margin: 0; font-size: 20px; }
 
 .view-content { padding: 24px 28px; overflow-y: auto; }
+
+/* ===================== TOASTS (pop-up de novo chamado) ===================== */
+#toast-root {
+  position: fixed;
+  top: 20px;
+  right: 20px;
+  z-index: 2000;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.toast {
+  background: var(--surface);
+  border-left: 4px solid var(--primary);
+  border-radius: 8px;
+  box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+  padding: 12px 16px;
+  min-width: 260px;
+  max-width: 320px;
+  cursor: pointer;
+  animation: toast-in 0.25s ease;
+}
+.toast-title { font-weight: 700; font-size: 13.5px; margin-bottom: 4px; }
+.toast-body { font-size: 12.5px; color: var(--text-secondary); }
+@keyframes toast-in {
+  from { transform: translateX(20px); opacity: 0; }
+  to { transform: translateX(0); opacity: 1; }
+}
 
 /* ===================== CARTÕES / DASHBOARD ===================== */
 .cards-row { display: grid; grid-template-columns: repeat(5, 1fr); gap: 16px; margin-bottom: 20px; }

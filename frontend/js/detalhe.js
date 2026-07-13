@@ -25,7 +25,8 @@ const Detalhe = {
       ['Status', statusDisplay(item.status)],
       ['Descrição', item.descricao],
       ['Observações', item.observacoes],
-      ['Aberto em', formatarData(item.dataAbertura)],
+      ['Agendado para', formatarData(item.dataAgendada)],
+      ['Solicitado em', formatarData(item.dataAbertura)],
       ['Início', item.dataInicio ? formatarData(item.dataInicio) : '—'],
       ['Conclusão', item.dataConclusao ? formatarData(item.dataConclusao) : '—'],
       ['Tempo total', tempoTotal]

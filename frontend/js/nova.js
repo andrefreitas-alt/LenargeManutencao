@@ -35,6 +35,14 @@ const NovaSolicitacao = {
               <select id="nova-tipo" required><option value="">Selecione...</option>${opcoesTipos}</select>
             </div>
             <div class="field">
+              <label>Data agendada *</label>
+              <input type="date" id="nova-data-agendada" required>
+            </div>
+            <div class="field">
+              <label>Horário agendado *</label>
+              <input type="time" id="nova-hora-agendada" required>
+            </div>
+            <div class="field">
               <label>Responsável</label>
               <input type="text" id="nova-responsavel">
             </div>
@@ -68,6 +76,16 @@ const NovaSolicitacao = {
       e.preventDefault();
       showMessage('nova-msg', '');
 
+      const data = document.getElementById('nova-data-agendada').value;
+      const hora = document.getElementById('nova-hora-agendada').value;
+
+      if (!data || !hora) {
+        showMessage('nova-msg', 'Informe a data e o horário agendados.');
+        return;
+      }
+
+      const dataAgendada = new Date(`${data}T${hora}:00`).toISOString();
+
       const body = {
         solicitante: document.getElementById('nova-solicitante').value,
         placa: document.getElementById('nova-placa').value,
@@ -76,7 +94,8 @@ const NovaSolicitacao = {
         responsavel: document.getElementById('nova-responsavel').value,
         prioridade: document.getElementById('nova-prioridade').value,
         descricao: document.getElementById('nova-descricao').value,
-        observacoes: document.getElementById('nova-observacoes').value
+        observacoes: document.getElementById('nova-observacoes').value,
+        dataAgendada
       };
 
       try {

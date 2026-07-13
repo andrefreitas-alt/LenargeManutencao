@@ -82,13 +82,18 @@
       <img src="assets/logo.png" alt="Lenarge"
            onerror="this.style.display='none'; document.getElementById('logo-fallback-text').style.display='inline';">
       <span id="logo-fallback-text" class="logo-fallback">Lenarge</span>
+      <button id="sidebar-toggle" class="sidebar-toggle" type="button" title="Minimizar/expandir menu">☰</button>
     </div>
 
     <nav class="nav-list">
-      <div class="nav-item" data-view="dashboard">📊 Dashboard</div>
-      <div class="nav-item" data-view="nova">➕ Nova solicitação</div>
-      <div class="nav-item" data-view="lista">📋 Pesquisar / Lista</div>
-      <div class="nav-item" data-view="config" id="nav-config">⚙️ Configurações</div>
+      <div class="nav-item" data-view="dashboard"><span class="nav-icon">📊</span><span class="nav-label">Dashboard</span></div>
+      <div class="nav-item" data-view="nova"><span class="nav-icon">➕</span><span class="nav-label">Nova solicitação</span></div>
+      <div class="nav-item" data-view="lista"><span class="nav-icon">📋</span><span class="nav-label">Pesquisar / Lista</span></div>
+      <div class="nav-item hidden" data-view="novas" id="nav-novas">
+        <span class="nav-icon">🆕</span><span class="nav-label">Novas Solicitações</span>
+        <span class="badge-count hidden" id="novas-badge">0</span>
+      </div>
+      <div class="nav-item" data-view="config" id="nav-config"><span class="nav-icon">⚙️</span><span class="nav-label">Configurações</span></div>
     </nav>
 
     <div class="sidebar-user">
@@ -107,6 +112,7 @@
   </div>
 </div>
 
+<div id="toast-root"></div>
 <div id="modal-root"></div>
 
 <script src="js/api.js"></script>
@@ -115,6 +121,7 @@
 <script src="js/dashboard.js"></script>
 <script src="js/nova.js"></script>
 <script src="js/lista.js"></script>
+<script src="js/novas.js"></script>
 <script src="js/detalhe.js"></script>
 <script src="js/config.js"></script>
 <script src="js/app.js"></script>

@@ -1,15 +1,10 @@
 // db.js
-// Configuração Universal (Suporta variáveis do Render ou fallback direto para a nuvem)
+// Configuração de conexão com o PostgreSQL (usa a variável de ambiente DATABASE_URL)
 const { Pool } = require('pg');
 const { hashPassword } = require('./services/passwordHasher');
 
-// 1. URL Direta da sua Nuvem no Render (Garantia caso a variável falhe)
-const URL_NUVEM = 'postgresql://admin:XVCuRcsv9vMk0dCZtkd5G7hPFy31UzbW@dpg-d98inci8qa3s73fj40q0-a/lenarge_db';
-
-// 2. Se houver DATABASE_URL no ambiente, ele usa. Se não, força a URL da nuvem.
-// Removido completamente o 'localhost' ou '127.0.0.1' para evitar erros na nuvem.
 const pool = new Pool({
-  connectionString: process.env.DATABASE_URL || URL_NUVEM,
+  connectionString: process.env.DATABASE_URL,
   ssl: { rejectUnauthorized: false } // Obrigatório para conexões seguras no Render
 });
 
@@ -20,7 +15,6 @@ async function migrate() {
   try {
     await client.query('BEGIN');
 
-    // 1. Criar Tabelas (Sintaxe adaptada para PostgreSQL)
     await client.query(`
       CREATE TABLE IF NOT EXISTS usuarios (
         id              SERIAL PRIMARY KEY,
@@ -71,7 +65,12 @@ async function migrate() {
       );
     `);
 
-    // 2. Seed de Usuário Admin
+    // Migração incremental: adiciona a coluna de data/hora agendada
+    // (necessário porque CREATE TABLE IF NOT EXISTS não altera tabelas já existentes)
+    await client.query(`ALTER TABLE solicitacoes ADD COLUMN IF NOT EXISTS data_agendada TEXT NOT NULL DEFAULT '';`);
+    // Solicitações antigas (criadas antes desse campo existir) usam a data de abertura como referência
+    await client.query(`UPDATE solicitacoes SET data_agendada = data_abertura WHERE data_agendada = '';`);
+
     const usuariosRes = await client.query('SELECT COUNT(*) AS c FROM usuarios');
     if (parseInt(usuariosRes.rows[0].c) === 0) {
       const { hash, salt } = hashPassword('admin123');
@@ -81,7 +80,6 @@ async function migrate() {
       `, ['Administrador', 'admin', 'admin@lenarge.com.br', '', hash, salt, 'Administrador', new Date().toISOString()]);
     }
 
-    // 3. Seed de Tipos
     const tiposRes = await client.query('SELECT COUNT(*) AS c FROM tipos');
     if (parseInt(tiposRes.rows[0].c) === 0) {
       const tipos = [
@@ -93,7 +91,6 @@ async function migrate() {
       }
     }
 
-    // 4. Seed de Locais
     const locaisRes = await client.query('SELECT COUNT(*) AS c FROM locais');
     if (parseInt(locaisRes.rows[0].c) === 0) {
       const locais = [
