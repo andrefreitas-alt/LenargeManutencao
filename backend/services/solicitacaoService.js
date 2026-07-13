@@ -36,14 +36,9 @@ async function carregarHistorico(solicitacaoId) {
   return res.rows.map(h => ({ id: h.id, acao: h.acao, usuario: h.usuario, detalhe: h.detalhe, data: h.data }));
 }
 
-// Convertida para async
+// Agora todos os papéis (Administrador e Solicitante) veem todas as solicitações
 async function obterTodas(usuarioAtual) {
-  let res;
-  if (usuarioAtual.papel === 'Solicitante') {
-    res = await db.query('SELECT * FROM solicitacoes WHERE criado_por_usuario_id = $1 ORDER BY data_abertura DESC', [usuarioAtual.id]);
-  } else {
-    res = await db.query('SELECT * FROM solicitacoes ORDER BY data_abertura DESC');
-  }
+  const res = await db.query('SELECT * FROM solicitacoes ORDER BY data_abertura DESC');
   return res.rows.map(mapSolicitacao);
 }
 
@@ -60,7 +55,7 @@ async function obterPorId(id) {
 // Convertida para async
 async function criar(nova, usuarioAtual) {
   const agora = new Date().toISOString();
-  
+
   // No Postgres, usamos RETURNING id para pegar o ID gerado
   const insertSolicitacao = await db.query(`
     INSERT INTO solicitacoes
@@ -117,7 +112,7 @@ async function duplicar(solicitacaoId, usuarioAtual) {
   if (!original) throw Object.assign(new Error('Solicitação não encontrada.'), { status: 404 });
 
   const agora = new Date().toISOString();
-  
+
   const insertDuplicada = await db.query(`
     INSERT INTO solicitacoes
       (solicitante, placa, local, tipo, descricao, responsavel, observacoes, prioridade, status, data_abertura, criado_por_usuario_id)

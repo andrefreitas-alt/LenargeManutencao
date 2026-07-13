@@ -23,9 +23,9 @@ router.get('/:id', async (req, res) => {
     const item = await solicitacaoService.obterPorId(Number(req.params.id));
     if (!item) return res.status(404).json({ erro: 'Solicitação não encontrada.' });
 
-    // Solicitante só pode ver a própria solicitação
+    // Solicitante só pode ver o detalhe da própria solicitação
     if (req.session.usuario.papel === 'Solicitante' && item.criadoPorUsuarioId !== req.session.usuario.id) {
-      return res.status(403).json({ erro: 'Você não tem acesso a essa solicitação.' });
+      return res.status(403).json({ erro: 'Você não tem permissão para ver mais informações desta solicitação.' });
     }
 
     res.json({ item });
