@@ -7,6 +7,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/tabler-icons/2.44.0/iconfont/tabler-icons.min.css">
 <link rel="stylesheet" href="css/theme.css">
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.4/dist/chart.umd.min.js"></script>
 </head>
@@ -14,130 +15,100 @@
 
 <!-- ===================== TELA DE LOGIN ===================== -->
 <div id="login-screen" class="auth-screen hidden">
-  <div class="road-scene" aria-hidden="true">
-    <div class="road-sky"></div>
-    <div class="road-ground"></div>
-    <div class="road-line"></div>
-    <svg class="truck truck-1" viewBox="0 0 120 50" xmlns="http://www.w3.org/2000/svg">
-      <rect x="0" y="18" width="70" height="22" rx="3" fill="#ED1B24"/>
-      <rect x="70" y="8" width="35" height="32" rx="3" fill="#2a2a2a"/>
-      <rect x="76" y="14" width="14" height="12" rx="1" fill="#8ecbe0"/>
-      <circle cx="24" cy="42" r="7" fill="#111"/>
-      <circle cx="24" cy="42" r="3" fill="#666"/>
-      <circle cx="90" cy="42" r="7" fill="#111"/>
-      <circle cx="90" cy="42" r="3" fill="#666"/>
-    </svg>
-    <svg class="truck truck-2" viewBox="0 0 120 50" xmlns="http://www.w3.org/2000/svg">
-      <rect x="0" y="18" width="70" height="22" rx="3" fill="#3a3a3a"/>
-      <rect x="70" y="8" width="35" height="32" rx="3" fill="#ED1B24"/>
-      <rect x="76" y="14" width="14" height="12" rx="1" fill="#8ecbe0"/>
-      <circle cx="24" cy="42" r="7" fill="#111"/>
-      <circle cx="24" cy="42" r="3" fill="#666"/>
-      <circle cx="90" cy="42" r="7" fill="#111"/>
-      <circle cx="90" cy="42" r="3" fill="#666"/>
-    </svg>
-    <svg class="truck truck-3" viewBox="0 0 120 50" xmlns="http://www.w3.org/2000/svg">
-      <rect x="0" y="18" width="70" height="22" rx="3" fill="#ED1B24"/>
-      <rect x="70" y="8" width="35" height="32" rx="3" fill="#2a2a2a"/>
-      <rect x="76" y="14" width="14" height="12" rx="1" fill="#8ecbe0"/>
-      <circle cx="24" cy="42" r="7" fill="#111"/>
-      <circle cx="24" cy="42" r="3" fill="#666"/>
-      <circle cx="90" cy="42" r="7" fill="#111"/>
-      <circle cx="90" cy="42" r="3" fill="#666"/>
-    </svg>
+  <div class="speed-lines" aria-hidden="true">
+    <div class="sline" style="top:15%;width:40%;animation-delay:0s"></div>
+    <div class="sline" style="top:28%;width:60%;animation-delay:0.6s"></div>
+    <div class="sline" style="top:45%;width:35%;animation-delay:1.2s"></div>
+    <div class="sline" style="top:62%;width:55%;animation-delay:0.3s"></div>
+    <div class="sline" style="top:78%;width:30%;animation-delay:1.6s"></div>
+    <div class="sline" style="top:90%;width:45%;animation-delay:0.9s"></div>
   </div>
-  <div class="auth-card">
-    <div class="auth-logo">
-      <img src="assets/logo.png" alt="Lenarge" onerror="this.style.display='none'">
+
+  <div class="auth-split">
+    <div class="auth-side">
+      <div class="auth-side-logo">
+        <img src="assets/logo.png" alt="Lenarge" onerror="this.style.display='none'">
+      </div>
+      <h1>Plataforma integrada de gestão</h1>
+      <p>Manutenção de tablets e rastreadores</p>
     </div>
-    <h1>Manutenção de Tablets e Rastreadores</h1>
-    <div id="login-msg"></div>
-    <form id="login-form">
-      <div class="field">
-        <label>Usuário</label>
-        <input type="text" id="login-usuario" autocomplete="username" required>
+
+    <div class="auth-card">
+      <h2>Acesso ao sistema</h2>
+      <p class="auth-card-subtitle">Entre com suas credenciais</p>
+      <div id="login-msg"></div>
+      <form id="login-form">
+        <div class="field">
+          <label>Usuário</label>
+          <input type="text" id="login-usuario" autocomplete="username" required>
+        </div>
+        <div class="field">
+          <label>Senha</label>
+          <input type="password" id="login-senha" autocomplete="current-password" required>
+        </div>
+        <button type="submit" class="btn btn-primary" style="width:100%">Entrar</button>
+      </form>
+      <div class="auth-footer">
+        Não tem conta? <span class="btn-link" id="go-signup" style="cursor:pointer">Criar conta</span>
       </div>
-      <div class="field">
-        <label>Senha</label>
-        <input type="password" id="login-senha" autocomplete="current-password" required>
-      </div>
-      <button type="submit" class="btn btn-primary" style="width:100%">Entrar</button>
-    </form>
-    <div class="auth-footer">
-      Não tem conta? <span class="btn-link" id="go-signup" style="cursor:pointer">Criar conta</span>
     </div>
   </div>
 </div>
 
 <!-- ===================== TELA DE CADASTRO ===================== -->
 <div id="signup-screen" class="auth-screen hidden">
-  <div class="road-scene" aria-hidden="true">
-    <div class="road-sky"></div>
-    <div class="road-ground"></div>
-    <div class="road-line"></div>
-    <svg class="truck truck-1" viewBox="0 0 120 50" xmlns="http://www.w3.org/2000/svg">
-      <rect x="0" y="18" width="70" height="22" rx="3" fill="#ED1B24"/>
-      <rect x="70" y="8" width="35" height="32" rx="3" fill="#2a2a2a"/>
-      <rect x="76" y="14" width="14" height="12" rx="1" fill="#8ecbe0"/>
-      <circle cx="24" cy="42" r="7" fill="#111"/>
-      <circle cx="24" cy="42" r="3" fill="#666"/>
-      <circle cx="90" cy="42" r="7" fill="#111"/>
-      <circle cx="90" cy="42" r="3" fill="#666"/>
-    </svg>
-    <svg class="truck truck-2" viewBox="0 0 120 50" xmlns="http://www.w3.org/2000/svg">
-      <rect x="0" y="18" width="70" height="22" rx="3" fill="#3a3a3a"/>
-      <rect x="70" y="8" width="35" height="32" rx="3" fill="#ED1B24"/>
-      <rect x="76" y="14" width="14" height="12" rx="1" fill="#8ecbe0"/>
-      <circle cx="24" cy="42" r="7" fill="#111"/>
-      <circle cx="24" cy="42" r="3" fill="#666"/>
-      <circle cx="90" cy="42" r="7" fill="#111"/>
-      <circle cx="90" cy="42" r="3" fill="#666"/>
-    </svg>
-    <svg class="truck truck-3" viewBox="0 0 120 50" xmlns="http://www.w3.org/2000/svg">
-      <rect x="0" y="18" width="70" height="22" rx="3" fill="#ED1B24"/>
-      <rect x="70" y="8" width="35" height="32" rx="3" fill="#2a2a2a"/>
-      <rect x="76" y="14" width="14" height="12" rx="1" fill="#8ecbe0"/>
-      <circle cx="24" cy="42" r="7" fill="#111"/>
-      <circle cx="24" cy="42" r="3" fill="#666"/>
-      <circle cx="90" cy="42" r="7" fill="#111"/>
-      <circle cx="90" cy="42" r="3" fill="#666"/>
-    </svg>
+  <div class="speed-lines" aria-hidden="true">
+    <div class="sline" style="top:15%;width:40%;animation-delay:0s"></div>
+    <div class="sline" style="top:28%;width:60%;animation-delay:0.6s"></div>
+    <div class="sline" style="top:45%;width:35%;animation-delay:1.2s"></div>
+    <div class="sline" style="top:62%;width:55%;animation-delay:0.3s"></div>
+    <div class="sline" style="top:78%;width:30%;animation-delay:1.6s"></div>
+    <div class="sline" style="top:90%;width:45%;animation-delay:0.9s"></div>
   </div>
-  <div class="auth-card">
-    <div class="auth-logo">
-      <img src="assets/logo.png" alt="Lenarge" onerror="this.style.display='none'">
+
+  <div class="auth-split">
+    <div class="auth-side">
+      <div class="auth-side-logo">
+        <img src="assets/logo.png" alt="Lenarge" onerror="this.style.display='none'">
+      </div>
+      <h1>Plataforma integrada de gestão</h1>
+      <p>Manutenção de tablets e rastreadores</p>
     </div>
-    <h1>Criar conta de Solicitante</h1>
-    <div id="signup-msg"></div>
-    <form id="signup-form">
-      <div class="field">
-        <label>Nome completo</label>
-        <input type="text" id="signup-nome" required>
+
+    <div class="auth-card">
+      <h2>Criar conta</h2>
+      <p class="auth-card-subtitle">Cadastro de solicitante</p>
+      <div id="signup-msg"></div>
+      <form id="signup-form">
+        <div class="field">
+          <label>Nome completo</label>
+          <input type="text" id="signup-nome" required>
+        </div>
+        <div class="field">
+          <label>E-mail</label>
+          <input type="email" id="signup-email" required>
+        </div>
+        <div class="field">
+          <label>Telefone (com DDD)</label>
+          <input type="text" id="signup-telefone" placeholder="(31) 91234-5678" required>
+        </div>
+        <div class="field">
+          <label>Usuário</label>
+          <input type="text" id="signup-usuario" required>
+        </div>
+        <div class="field">
+          <label>Senha</label>
+          <input type="password" id="signup-senha" required>
+        </div>
+        <div class="field">
+          <label>Confirmar senha</label>
+          <input type="password" id="signup-confirmar" required>
+        </div>
+        <button type="submit" class="btn btn-primary" style="width:100%">Criar conta</button>
+      </form>
+      <div class="auth-footer">
+        Já tem conta? <span class="btn-link" id="go-login" style="cursor:pointer">Entrar</span>
       </div>
-      <div class="field">
-        <label>E-mail</label>
-        <input type="email" id="signup-email" required>
-      </div>
-      <div class="field">
-        <label>Telefone (com DDD)</label>
-        <input type="text" id="signup-telefone" placeholder="(31) 91234-5678" required>
-      </div>
-      <div class="field">
-        <label>Usuário</label>
-        <input type="text" id="signup-usuario" required>
-      </div>
-      <div class="field">
-        <label>Senha</label>
-        <input type="password" id="signup-senha" required>
-      </div>
-      <div class="field">
-        <label>Confirmar senha</label>
-        <input type="password" id="signup-confirmar" required>
-      </div>
-      <button type="submit" class="btn btn-primary" style="width:100%">Criar conta</button>
-    </form>
-    <div class="auth-footer">
-      Já tem conta? <span class="btn-link" id="go-login" style="cursor:pointer">Entrar</span>
     </div>
   </div>
 </div>
@@ -149,18 +120,20 @@
       <img src="assets/logo.png" alt="Lenarge"
            onerror="this.style.display='none'; document.getElementById('logo-fallback-text').style.display='inline';">
       <span id="logo-fallback-text" class="logo-fallback">Lenarge</span>
-      <button id="sidebar-toggle" class="sidebar-toggle" type="button" title="Minimizar/expandir menu">☰</button>
+      <button id="sidebar-toggle" class="sidebar-toggle" type="button" title="Minimizar/expandir menu">
+        <i class="ti ti-menu-2"></i>
+      </button>
     </div>
 
     <nav class="nav-list">
-      <div class="nav-item" data-view="dashboard"><span class="nav-icon">📊</span><span class="nav-label">Dashboard</span></div>
-      <div class="nav-item" data-view="nova"><span class="nav-icon">➕</span><span class="nav-label">Nova solicitação</span></div>
-      <div class="nav-item" data-view="lista"><span class="nav-icon">📋</span><span class="nav-label">Pesquisar / Lista</span></div>
+      <div class="nav-item" data-view="dashboard"><i class="ti ti-chart-bar nav-icon"></i><span class="nav-label">Dashboard</span></div>
+      <div class="nav-item" data-view="nova"><i class="ti ti-plus nav-icon"></i><span class="nav-label">Nova solicitação</span></div>
+      <div class="nav-item" data-view="lista"><i class="ti ti-list-details nav-icon"></i><span class="nav-label">Pesquisar / Lista</span></div>
       <div class="nav-item hidden" data-view="novas" id="nav-novas">
-        <span class="nav-icon">🆕</span><span class="nav-label">Novas Solicitações</span>
+        <i class="ti ti-files nav-icon"></i><span class="nav-label">Novas Solicitações</span>
         <span class="badge-count hidden" id="novas-badge">0</span>
       </div>
-      <div class="nav-item" data-view="config" id="nav-config"><span class="nav-icon">⚙️</span><span class="nav-label">Configurações</span></div>
+      <div class="nav-item" data-view="config" id="nav-config"><i class="ti ti-settings nav-icon"></i><span class="nav-label">Configurações</span></div>
     </nav>
 
     <div class="sidebar-user">
