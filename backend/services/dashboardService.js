@@ -20,7 +20,6 @@ async function obterDashboard(usuarioAtual) {
     ? `${(temposResolucao.reduce((a, b) => a + b, 0) / temposResolucao.length).toFixed(1)}h`
     : '—';
 
-  // Por mês (últimos 6 meses) — agora baseado na DATA AGENDADA, não na data de abertura
   const hoje = new Date();
   const meses = [];
   for (let i = 5; i >= 0; i--) {
@@ -68,9 +67,24 @@ async function obterDashboard(usuarioAtual) {
     })
   };
 
+  // Frequência de manutenções por placa (top 8 mais frequentes)
+  const contagemPorPlaca = {};
+  solicitacoes.forEach(s => {
+    const placa = (s.placa || '').trim().toUpperCase();
+    if (!placa) return;
+    contagemPorPlaca[placa] = (contagemPorPlaca[placa] || 0) + 1;
+  });
+  const placasOrdenadas = Object.entries(contagemPorPlaca)
+    .sort((a, b) => b[1] - a[1])
+    .slice(0, 8);
+  const porPlaca = {
+    labels: placasOrdenadas.map(([placa]) => placa),
+    valores: placasOrdenadas.map(([, qtd]) => qtd)
+  };
+
   return {
     total, concluidos, emAndamento, pendentes, tempoMedioTexto,
-    porMes, porStatus, porTipo, porLocal, tempoPorResponsavel
+    porMes, porStatus, porTipo, porLocal, tempoPorResponsavel, porPlaca
   };
 }
 
