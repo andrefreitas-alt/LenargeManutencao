@@ -27,6 +27,7 @@ function mapSolicitacao(row) {
     dataInicio: row.data_inicio,
     dataConclusao: row.data_conclusao,
     criadoPorUsuarioId: row.criado_por_usuario_id,
+    visto: row.visto === true,
     tempoResolucaoHoras
   };
 }
@@ -36,8 +37,6 @@ async function carregarHistorico(solicitacaoId) {
   return res.rows.map(h => ({ id: h.id, acao: h.acao, usuario: h.usuario, detalhe: h.detalhe, data: h.data }));
 }
 
-// Todos os papéis (Administrador e Solicitante) veem todas as solicitações,
-// ordenadas pela data agendada (mais próxima primeiro)
 async function obterTodas(usuarioAtual) {
   const res = await db.query('SELECT * FROM solicitacoes ORDER BY data_agendada ASC');
   return res.rows.map(mapSolicitacao);
@@ -136,4 +135,12 @@ async function excluir(solicitacaoId, usuarioAtual) {
   await db.query('DELETE FROM solicitacoes WHERE id = $1', [solicitacaoId]);
 }
 
-module.exports = { obterTodas, obterPorId, criar, mudarStatus, duplicar, excluir, mapSolicitacao };
+async function marcarVisto(solicitacaoId, visto, usuarioAtual) {
+  if (usuarioAtual.papel !== 'Administrador') {
+    throw Object.assign(new Error('Apenas Administradores podem marcar como visto.'), { status: 403 });
+  }
+  await db.query('UPDATE solicitacoes SET visto = $1 WHERE id = $2', [visto, solicitacaoId]);
+  return await obterPorId(solicitacaoId);
+}
+
+module.exports = { obterTodas, obterPorId, criar, mudarStatus, duplicar, excluir, marcarVisto, mapSolicitacao };

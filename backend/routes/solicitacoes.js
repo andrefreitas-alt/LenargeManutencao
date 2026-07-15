@@ -47,14 +47,14 @@ router.post('/', async (req, res) => {
     }
 
     const nova = {
-      solicitante: solicitante.trim().toUpperCase(),
+      solicitante: solicitante.trim(),
       placa: (placa || '').trim().toUpperCase(),
       local,
       tipo,
-      descricao: (descricao || '').trim().toUpperCase(),
-      responsavel: (responsavel || '').trim().toUpperCase(),
+      descricao: (descricao || '').trim(),
+      responsavel: (responsavel || '').trim(),
       prioridade: prioridade || 'Media',
-      observacoes: (observacoes || '').trim().toUpperCase(),
+      observacoes: (observacoes || '').trim(),
       dataAgendada
     };
 
@@ -88,6 +88,15 @@ router.post('/:id/duplicar', async (req, res) => {
   try {
     const item = await solicitacaoService.duplicar(Number(req.params.id), req.session.usuario);
     res.status(201).json({ item });
+  } catch (err) {
+    res.status(err.status || 400).json({ erro: err.message });
+  }
+});
+
+router.post('/:id/visto', async (req, res) => {
+  try {
+    const item = await solicitacaoService.marcarVisto(Number(req.params.id), !!req.body.visto, req.session.usuario);
+    res.json({ item });
   } catch (err) {
     res.status(err.status || 400).json({ erro: err.message });
   }

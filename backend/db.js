@@ -5,7 +5,7 @@ const { hashPassword } = require('./services/passwordHasher');
 
 const pool = new Pool({
   connectionString: process.env.DATABASE_URL,
-  ssl: { rejectUnauthorized: false } // Obrigatório para conexões seguras no Render
+  ssl: { rejectUnauthorized: false }
 });
 
 console.log("==> Conectando ao Banco de Dados Postgres via URL remota...");
@@ -65,11 +65,11 @@ async function migrate() {
       );
     `);
 
-    // Migração incremental: adiciona a coluna de data/hora agendada
-    // (necessário porque CREATE TABLE IF NOT EXISTS não altera tabelas já existentes)
+    // Migrações incrementais (colunas adicionadas após a criação inicial das tabelas)
     await client.query(`ALTER TABLE solicitacoes ADD COLUMN IF NOT EXISTS data_agendada TEXT NOT NULL DEFAULT '';`);
-    // Solicitações antigas (criadas antes desse campo existir) usam a data de abertura como referência
     await client.query(`UPDATE solicitacoes SET data_agendada = data_abertura WHERE data_agendada = '';`);
+
+    await client.query(`ALTER TABLE solicitacoes ADD COLUMN IF NOT EXISTS visto BOOLEAN NOT NULL DEFAULT FALSE;`);
 
     const usuariosRes = await client.query('SELECT COUNT(*) AS c FROM usuarios');
     if (parseInt(usuariosRes.rows[0].c) === 0) {

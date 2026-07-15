@@ -71,7 +71,14 @@ const App = {
       el.classList.toggle('active', el.dataset.view === destino);
     });
 
-    const titulos = { dashboard: 'Dashboard', nova: 'Nova solicitacao', lista: 'Pesquisar / Lista', novas: 'Novas Solicitações', config: 'Configuracoes' };
+    const titulos = {
+      dashboard: 'Dashboard',
+      nova: 'Nova solicitacao',
+      lista: 'Pesquisar / Lista',
+      novas: 'Novas Solicitações',
+      minhas: 'Minhas Solicitações',
+      config: 'Configuracoes'
+    };
     document.getElementById('view-title').textContent = titulos[destino] || 'Dashboard';
 
     const container = document.getElementById('view-content');
@@ -82,6 +89,7 @@ const App = {
         case 'nova': await NovaSolicitacao.render(container); break;
         case 'lista': await ListaSolicitacoes.render(container); break;
         case 'novas': await NovasSolicitacoes.render(container); break;
+        case 'minhas': await MinhasSolicitacoes.render(container); break;
         case 'config': await Config.render(container); break;
         default: await Dashboard.render(container); break;
       }
@@ -101,7 +109,6 @@ const App = {
       const { itens } = await Api.get('/api/solicitacoes');
       const pendentesIds = itens.filter(s => s.status === 'Pendente').map(s => s.id);
 
-      // Primeira vez nesse navegador: marca os pendentes atuais como "já vistos", sem popup
       if (this._novasVistas.size === 0 && pendentesIds.length > 0) {
         pendentesIds.forEach(id => this._novasVistas.add(id));
         localStorage.setItem('novasVistasIds', JSON.stringify([...this._novasVistas]));

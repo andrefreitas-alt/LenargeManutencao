@@ -117,9 +117,11 @@
 <div id="app-shell" class="app-shell hidden">
   <aside class="sidebar">
     <div class="sidebar-logo">
-      <img src="assets/logo.png" alt="Lenarge"
-           onerror="this.style.display='none'; document.getElementById('logo-fallback-text').style.display='inline';">
-      <span id="logo-fallback-text" class="logo-fallback">Lenarge</span>
+      <div class="sidebar-logo-brand">
+        <img src="assets/logo.png" alt="Lenarge"
+             onerror="this.style.display='none'; document.getElementById('logo-fallback-text').style.display='inline';">
+        <span id="logo-fallback-text" class="logo-fallback">Lenarge</span>
+      </div>
       <button id="sidebar-toggle" class="sidebar-toggle" type="button" title="Minimizar/expandir menu">
         <i class="ti ti-menu-2"></i>
       </button>
@@ -133,6 +135,7 @@
         <i class="ti ti-files nav-icon"></i><span class="nav-label">Novas Solicitações</span>
         <span class="badge-count hidden" id="novas-badge">0</span>
       </div>
+      <div class="nav-item" data-view="minhas"><i class="ti ti-user-check nav-icon"></i><span class="nav-label">Minhas Solicitações</span></div>
       <div class="nav-item" data-view="config" id="nav-config"><i class="ti ti-settings nav-icon"></i><span class="nav-label">Configurações</span></div>
     </nav>
 
@@ -162,6 +165,7 @@
 <script src="js/nova.js"></script>
 <script src="js/lista.js"></script>
 <script src="js/novas.js"></script>
+<script src="js/minhas.js"></script>
 <script src="js/detalhe.js"></script>
 <script src="js/config.js"></script>
 <script src="js/app.js"></script>
