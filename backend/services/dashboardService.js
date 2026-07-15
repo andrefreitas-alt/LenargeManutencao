@@ -2,7 +2,6 @@
 // Equivalente aos CÁLCULOS do ViewModels/DashboardViewModel.cs original.
 
 const solicitacaoService = require('./solicitacaoService');
-const cadastroService = require('./cadastroService');
 const { STATUS_DISPLAY } = require('./enums');
 
 async function obterDashboard(usuarioAtual) {
@@ -42,18 +41,24 @@ async function obterDashboard(usuarioAtual) {
     .map(st => ({ status: st, label: STATUS_DISPLAY[st], valor: solicitacoes.filter(s => s.status === st).length }))
     .filter(x => x.valor > 0);
 
-  const listaTipos = await cadastroService.obterTipos();
-  const tipos = listaTipos.map(t => t.nome);
+  const contagemPorTipo = {};
+  solicitacoes.forEach(s => {
+    const tipo = (s.tipo || 'Sem tipo').trim();
+    contagemPorTipo[tipo] = (contagemPorTipo[tipo] || 0) + 1;
+  });
   const porTipo = {
-    labels: tipos,
-    valores: tipos.map(tipo => solicitacoes.filter(s => s.tipo === tipo).length)
+    labels: Object.keys(contagemPorTipo),
+    valores: Object.values(contagemPorTipo)
   };
 
-  const listaLocais = await cadastroService.obterLocais();
-  const locais = listaLocais.map(l => l.nome);
+  const contagemPorLocal = {};
+  solicitacoes.forEach(s => {
+    const local = (s.local || 'Sem local').trim();
+    contagemPorLocal[local] = (contagemPorLocal[local] || 0) + 1;
+  });
   const porLocal = {
-    labels: locais,
-    valores: locais.map(local => solicitacoes.filter(s => s.local === local).length)
+    labels: Object.keys(contagemPorLocal),
+    valores: Object.values(contagemPorLocal)
   };
 
   const responsaveis = [...new Set(solicitacoes.map(s => s.responsavel).filter(r => r && r.trim()))].sort();
@@ -67,7 +72,6 @@ async function obterDashboard(usuarioAtual) {
     })
   };
 
-  // Frequência de manutenções por placa (top 8 mais frequentes)
   const contagemPorPlaca = {};
   solicitacoes.forEach(s => {
     const placa = (s.placa || '').trim().toUpperCase();
