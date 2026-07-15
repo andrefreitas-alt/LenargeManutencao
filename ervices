@@ -1,0 +1,16 @@
+[33mcommit bad5ed82dc476c022fe9c44e021a75ecb657b0f2[m[33m ([m[1;36mHEAD[m[33m -> [m[1;32mmain[m[33m, [m[1;31morigin/main[m[33m, [m[1;31morigin/HEAD[m[33m)[m
+Author: Andre Freitas <andre.freitas@lenarge.com.br>
+Date:   Wed Jul 15 15:52:16 2026 -0300
+
+    15/07/2026
+
+ backend/db.js                          |   8 [32m+[m[31m--[m
+ backend/routes/dashboard.js            | 114 [32m++++++++++++++++++++++++++++[m[31m-----[m
+ backend/routes/minhas.js               |  44 [32m+++++++++++++[m
+ backend/routes/solicitacoes.js         |  17 [32m+++[m[31m--[m
+ backend/services/solicitacaoService.js |  13 [32m+++[m[31m-[m
+ frontend/css/theme.css                 |  41 [32m++++++++[m[31m----[m
+ frontend/index.html                    |  10 [32m++[m[31m-[m
+ frontend/js/app.js                     |  11 [32m+++[m[31m-[m
+ frontend/js/novas.js                   |  23 [32m++++++[m[31m-[m
+ 9 files changed, 235 insertions(+), 46 deletions(-)
