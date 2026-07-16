@@ -249,8 +249,8 @@ textarea { resize: vertical; min-height: 70px; }
 }
 .sidebar-logo-brand img {
   min-width: 0;
-  flex-shrink: 1;
-  max-width: 240px;
+  flex-shrink: 0;
+  max-width: 180px;
   max-height: 26px;
   width: 100%;
   height: auto;
