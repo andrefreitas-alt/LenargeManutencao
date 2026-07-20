@@ -6,6 +6,10 @@ function showMessage(containerId, texto, tipo = 'error') {
   el.innerHTML = `<div class="message ${tipo}">${texto}</div>`;
 }
 
+function isLenargeEmailFront(email) {
+  return /^[^\s@]+@lenarge\.com\.br$/i.test((email || '').trim());
+}
+
 document.getElementById('login-form').addEventListener('submit', async (e) => {
   e.preventDefault();
   showMessage('login-msg', '');
@@ -31,6 +35,11 @@ document.getElementById('signup-form').addEventListener('submit', async (e) => {
   const nomeUsuario = document.getElementById('signup-usuario').value;
   const senha = document.getElementById('signup-senha').value;
   const confirmarSenha = document.getElementById('signup-confirmar').value;
+
+  if (!isLenargeEmailFront(email)) {
+    showMessage('signup-msg', 'Somente usuários com e-mail corporativo @lenarge.com.br podem se cadastrar.');
+    return;
+  }
 
   try {
     const { usuario } = await Api.post('/api/auth/signup', { nome, email, telefone, nomeUsuario, senha, confirmarSenha });

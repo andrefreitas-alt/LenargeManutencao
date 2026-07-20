@@ -8,6 +8,8 @@ const NovaSolicitacao = {
       Api.get('/api/cadastro/locais')
     ]);
 
+    const isAdmin = App.usuario.papel === 'Administrador';
+
     const opcoesTipos = tiposResp.itens.map(t => `<option value="${t.nome}">${t.nome}</option>`).join('');
     const opcoesLocais = locaisResp.itens.map(l => `<option value="${l.nome}">${l.nome}</option>`).join('');
     const opcoesPrioridade = Object.entries(PRIORIDADE_DISPLAY)
@@ -23,8 +25,8 @@ const NovaSolicitacao = {
               <input type="text" id="nova-solicitante" required>
             </div>
             <div class="field">
-              <label>Placa (opcional)</label>
-              <input type="text" id="nova-placa" placeholder="Ex: ABC1D23">
+              <label>Placa do veículo *</label>
+              <input type="text" id="nova-placa" placeholder="Ex: ABC1D23" required>
             </div>
             <div class="field">
               <label>Local *</label>
@@ -54,10 +56,11 @@ const NovaSolicitacao = {
               <label>Descrição</label>
               <textarea id="nova-descricao"></textarea>
             </div>
+            ${isAdmin ? `
             <div class="field full">
-              <label>Observações</label>
+              <label>Observações (anotação interna — visível apenas para Administradores)</label>
               <textarea id="nova-observacoes"></textarea>
-            </div>
+            </div>` : ''}
           </div>
           <div class="form-actions">
             <button type="submit" class="btn btn-primary">Criar solicitação</button>
@@ -76,6 +79,12 @@ const NovaSolicitacao = {
       e.preventDefault();
       showMessage('nova-msg', '');
 
+      const placa = document.getElementById('nova-placa').value.trim();
+      if (!placa) {
+        showMessage('nova-msg', 'Informe a placa do veículo.');
+        return;
+      }
+
       const data = document.getElementById('nova-data-agendada').value;
       const hora = document.getElementById('nova-hora-agendada').value;
 
@@ -88,13 +97,13 @@ const NovaSolicitacao = {
 
       const body = {
         solicitante: document.getElementById('nova-solicitante').value,
-        placa: document.getElementById('nova-placa').value,
+        placa,
         local: document.getElementById('nova-local').value,
         tipo: document.getElementById('nova-tipo').value,
         responsavel: document.getElementById('nova-responsavel').value,
         prioridade: document.getElementById('nova-prioridade').value,
         descricao: document.getElementById('nova-descricao').value,
-        observacoes: document.getElementById('nova-observacoes').value,
+        observacoes: isAdmin ? document.getElementById('nova-observacoes').value : '',
         dataAgendada
       };
 

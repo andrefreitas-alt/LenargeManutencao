@@ -12,15 +12,14 @@ const Dashboard = {
         <div class="card"><div class="card-label">Concluídos</div><div class="card-value success" id="dash-concluidos">—</div></div>
         <div class="card"><div class="card-label">Em andamento</div><div class="card-value primary" id="dash-andamento">—</div></div>
         <div class="card"><div class="card-label">Pendentes</div><div class="card-value warning" id="dash-pendentes">—</div></div>
-        <div class="card"><div class="card-label">Tempo médio</div><div class="card-value" id="dash-tempo">—</div></div>
+        <div class="card"><div class="card-label">Substituição de Módulo (LMU)</div><div class="card-value primary" id="dash-lmu">—</div></div>
       </div>
       <div class="charts-grid">
         <div class="chart-card"><h3>Solicitações por mês</h3><canvas id="chart-mes"></canvas></div>
         <div class="chart-card"><h3>Por status</h3><canvas id="chart-status"></canvas></div>
         <div class="chart-card"><h3>Por tipo de solicitação</h3><canvas id="chart-tipo"></canvas></div>
         <div class="chart-card"><h3>Por local</h3><canvas id="chart-local"></canvas></div>
-        <div class="chart-card"><h3>Manutenções por placa</h3><canvas id="chart-placa"></canvas></div>
-        <div class="chart-card"><h3>Tempo médio por responsável (h)</h3><canvas id="chart-resp"></canvas></div>
+        <div class="chart-card" style="grid-column: 1 / -1;"><h3>Manutenções por placa</h3><canvas id="chart-placa"></canvas></div>
       </div>
     `;
 
@@ -33,9 +32,8 @@ const Dashboard = {
     document.getElementById('dash-concluidos').textContent = data.concluidos;
     document.getElementById('dash-andamento').textContent = data.emAndamento;
     document.getElementById('dash-pendentes').textContent = data.pendentes;
-    document.getElementById('dash-tempo').textContent = data.tempoMedioTexto;
+    document.getElementById('dash-lmu').textContent = data.totalLMU;
 
-    // Paleta minimalista para os gráficos
     const CORES = {
       azul: '#3B82F6',
       verde: '#10B981',
@@ -134,19 +132,6 @@ const Dashboard = {
         plugins: { legend: { display: false }, tooltip: tooltipComum },
         scales: {
           x: { beginAtZero: true, grid: { color: CORES.grid }, ticks: { precision: 0 } },
-          y: { grid: { display: false } }
-        }
-      }
-    }));
-
-    this._charts.push(new Chart(document.getElementById('chart-resp'), {
-      type: 'bar',
-      data: { labels: data.tempoPorResponsavel.labels, datasets: [{ data: data.tempoPorResponsavel.valores, backgroundColor: CORES.verde, borderRadius: 6, maxBarThickness: 20 }] },
-      options: {
-        indexAxis: 'y',
-        plugins: { legend: { display: false }, tooltip: tooltipComum },
-        scales: {
-          x: { beginAtZero: true, grid: { color: CORES.grid } },
           y: { grid: { display: false } }
         }
       }

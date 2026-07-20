@@ -143,4 +143,15 @@ async function marcarVisto(solicitacaoId, visto, usuarioAtual) {
   return await obterPorId(solicitacaoId);
 }
 
-module.exports = { obterTodas, obterPorId, criar, mudarStatus, duplicar, excluir, marcarVisto, mapSolicitacao };
+async function atualizarObservacoes(solicitacaoId, observacoes, usuarioAtual) {
+  if (usuarioAtual.papel !== 'Administrador') {
+    throw Object.assign(new Error('Apenas Administradores podem editar observações internas.'), { status: 403 });
+  }
+  await db.query('UPDATE solicitacoes SET observacoes = $1 WHERE id = $2', [observacoes || '', solicitacaoId]);
+  return await obterPorId(solicitacaoId);
+}
+
+module.exports = {
+  obterTodas, obterPorId, criar, mudarStatus, duplicar, excluir,
+  marcarVisto, atualizarObservacoes, mapSolicitacao
+};

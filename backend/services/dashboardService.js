@@ -4,6 +4,8 @@
 const solicitacaoService = require('./solicitacaoService');
 const { STATUS_DISPLAY } = require('./enums');
 
+const TIPO_LMU = 'Substituição do Módulo (LMU)';
+
 async function obterDashboard(usuarioAtual) {
   const solicitacoes = await solicitacaoService.obterTodas(usuarioAtual);
 
@@ -61,17 +63,6 @@ async function obterDashboard(usuarioAtual) {
     valores: Object.values(contagemPorLocal)
   };
 
-  const responsaveis = [...new Set(solicitacoes.map(s => s.responsavel).filter(r => r && r.trim()))].sort();
-  const tempoPorResponsavel = {
-    labels: responsaveis,
-    valores: responsaveis.map(resp => {
-      const tempos = solicitacoes
-        .filter(s => s.responsavel === resp && s.tempoResolucaoHoras !== null)
-        .map(s => s.tempoResolucaoHoras);
-      return tempos.length > 0 ? Math.round((tempos.reduce((a, b) => a + b, 0) / tempos.length) * 10) / 10 : 0;
-    })
-  };
-
   const contagemPorPlaca = {};
   solicitacoes.forEach(s => {
     const placa = (s.placa || '').trim().toUpperCase();
@@ -86,9 +77,12 @@ async function obterDashboard(usuarioAtual) {
     valores: placasOrdenadas.map(([, qtd]) => qtd)
   };
 
+  // Novo indicador: total de solicitações do tipo "Substituição do Módulo (LMU)"
+  const totalLMU = solicitacoes.filter(s => (s.tipo || '').trim() === TIPO_LMU).length;
+
   return {
-    total, concluidos, emAndamento, pendentes, tempoMedioTexto,
-    porMes, porStatus, porTipo, porLocal, tempoPorResponsavel, porPlaca
+    total, concluidos, emAndamento, pendentes, tempoMedioTexto, totalLMU,
+    porMes, porStatus, porTipo, porLocal, porPlaca
   };
 }
 

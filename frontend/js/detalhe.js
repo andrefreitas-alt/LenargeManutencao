@@ -13,6 +13,7 @@ const Detalhe = {
     }
 
     const podeEditar = App.usuario.papel === 'Administrador';
+    const isAdmin = App.usuario.papel === 'Administrador';
     const podeCancelar = item.status !== 'Cancelado' && item.status !== 'Concluido';
     const tempoTotal = item.tempoResolucaoHoras !== null ? `${item.tempoResolucaoHoras.toFixed(1)}h` : '—';
 
@@ -24,7 +25,6 @@ const Detalhe = {
       ['Prioridade', prioridadeDisplay(item.prioridade)],
       ['Status', statusDisplay(item.status)],
       ['Descrição', item.descricao],
-      ['Observações', item.observacoes],
       ['Agendado para', formatarData(item.dataAgendada)],
       ['Solicitado em', formatarData(item.dataAbertura)],
       ['Início', item.dataInicio ? formatarData(item.dataInicio) : '—'],
@@ -57,6 +57,16 @@ const Detalhe = {
             `).join('')}
           </div>
 
+          ${isAdmin ? `
+            <div class="field full" style="margin-top:12px">
+              <label>Observações internas (visível apenas para Administradores)</label>
+              <textarea id="detalhe-observacoes">${item.observacoes || ''}</textarea>
+              <div class="form-actions" style="margin-top:8px">
+                <button class="btn btn-secondary btn-sm" id="btn-salvar-observacoes">Salvar observações</button>
+              </div>
+            </div>
+          ` : ''}
+
           ${podeEditar ? `
             <div class="status-actions">
               ${botoesStatus}
@@ -79,6 +89,16 @@ const Detalhe = {
     document.getElementById('detalhe-overlay').addEventListener('click', (e) => {
       if (e.target.id === 'detalhe-overlay') fechar();
     });
+
+    if (isAdmin) {
+      document.getElementById('btn-salvar-observacoes').addEventListener('click', async () => {
+        const texto = document.getElementById('detalhe-observacoes').value;
+        try {
+          await Api.post(`/api/solicitacoes/${item.id}/observacoes`, { observacoes: texto });
+          alert('Observações salvas.');
+        } catch (err) { alert(err.message); }
+      });
+    }
 
     if (podeEditar) {
       root.querySelectorAll('[data-status]').forEach(btn => {

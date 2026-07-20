@@ -4,15 +4,13 @@
 const db = require('../db');
 const { hashPassword } = require('./passwordHasher');
 const { isValidEmail, isValidTelefone, onlyDigits } = require('./validation');
-const { mapUsuario } = require('./authService');
+const { mapUsuario, isLenargeEmail } = require('./authService');
 
-// Convertida para async
 async function obterTodos() {
   const res = await db.query('SELECT * FROM usuarios ORDER BY nome');
   return res.rows.map(mapUsuario);
 }
 
-// Convertida para async
 async function criar({ nome, nomeUsuario, email, telefone, senha, papel }) {
   if (!nome?.trim() || !nomeUsuario?.trim() || !email?.trim() || !telefone?.trim()) {
     return { sucesso: false, erro: 'Preencha nome, usuário, e-mail e telefone.' };
@@ -20,6 +18,10 @@ async function criar({ nome, nomeUsuario, email, telefone, senha, papel }) {
 
   if (!isValidEmail(email)) {
     return { sucesso: false, erro: 'Informe um e-mail em um formato válido.' };
+  }
+
+  if (!isLenargeEmail(email)) {
+    return { sucesso: false, erro: 'Somente usuários com e-mail corporativo @lenarge.com.br podem se cadastrar.' };
   }
 
   if (!isValidTelefone(telefone)) {
@@ -30,7 +32,6 @@ async function criar({ nome, nomeUsuario, email, telefone, senha, papel }) {
     return { sucesso: false, erro: 'A senha precisa ter pelo menos 6 caracteres.' };
   }
 
-  // Validações adaptadas para sintaxe Postgres ($1 e .rows)
   const usuarioExisteRes = await db.query('SELECT 1 FROM usuarios WHERE LOWER(nome_usuario) = LOWER($1)', [nomeUsuario.trim()]);
   if (usuarioExisteRes.rows.length > 0) return { sucesso: false, erro: 'Já existe um usuário com esse login.' };
 
@@ -40,7 +41,6 @@ async function criar({ nome, nomeUsuario, email, telefone, senha, papel }) {
   const { hash, salt } = hashPassword(senha);
   const telefoneDigits = onlyDigits(telefone);
 
-  // No Postgres, usamos RETURNING * para obter a linha criada imediatamente
   const insertRes = await db.query(`
     INSERT INTO usuarios (nome, nome_usuario, email, telefone, password_hash, password_salt, papel, criado_em)
     VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
@@ -51,7 +51,6 @@ async function criar({ nome, nomeUsuario, email, telefone, senha, papel }) {
   return { sucesso: true, usuario: mapUsuario(row) };
 }
 
-// Convertida para async
 async function redefinirSenha(usuarioId, novaSenha) {
   if (!novaSenha || novaSenha.length < 6) {
     return { ok: false, erro: 'A senha precisa ter pelo menos 6 caracteres.' };
@@ -66,7 +65,6 @@ async function redefinirSenha(usuarioId, novaSenha) {
   return { ok: true };
 }
 
-// Convertida para async
 async function excluir(usuarioId, usuarioLogadoId) {
   if (usuarioId === usuarioLogadoId) {
     return { ok: false, erro: 'Você não pode excluir seu próprio usuário logado.' };
