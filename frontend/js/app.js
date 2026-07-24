@@ -5,6 +5,7 @@ const App = {
   usuario: null,
   viewAtual: 'dashboard',
   _pollTimer: null,
+  _pollTimerChat: null,
   _novasVistas: new Set(JSON.parse(localStorage.getItem('novasVistasIds') || '[]')),
 
   async init() {
@@ -53,11 +54,13 @@ const App = {
     if (isAdmin) {
       this._seedNovasVistasEIniciarPolling();
     }
+    this._iniciarPollingChat();
   },
 
   encerrarSessao() {
     this.usuario = null;
     this._pararPolling();
+    this._pararPollingChat();
     document.getElementById('login-form').reset();
     this.mostrarTela('login-screen');
   },
@@ -77,6 +80,7 @@ const App = {
       lista: 'Pesquisar / Lista',
       novas: 'Novas Solicitações',
       minhas: 'Minhas Solicitações',
+      chat: 'Chat',
       config: 'Configuracoes'
     };
     document.getElementById('view-title').textContent = titulos[destino] || 'Dashboard';
@@ -90,6 +94,7 @@ const App = {
         case 'lista': await ListaSolicitacoes.render(container); break;
         case 'novas': await NovasSolicitacoes.render(container); break;
         case 'minhas': await MinhasSolicitacoes.render(container); break;
+        case 'chat': await Chat.render(container); break;
         case 'config': await Config.render(container); break;
         default: await Dashboard.render(container); break;
       }
@@ -158,15 +163,48 @@ const App = {
   },
 
   _mostrarPopupNovoChamado(item) {
+    this._mostrarToast(`🆕 Novo chamado #${item.id}`, `${item.solicitante || 'Solicitante'} — ${item.tipo || ''}`, () => this.navigate('novas'));
+  },
+
+  // ===================== NOTIFICAÇÃO DE CHAT (TODOS OS USUÁRIOS) =====================
+
+  _chatNaoLidasAnterior: 0,
+
+  _iniciarPollingChat() {
+    this._pararPollingChat();
+    this._verificarChat();
+    this._pollTimerChat = setInterval(() => this._verificarChat(), 25000);
+  },
+
+  _pararPollingChat() {
+    if (this._pollTimerChat) { clearInterval(this._pollTimerChat); this._pollTimerChat = null; }
+  },
+
+  async _verificarChat() {
+    try {
+      const { total } = await Api.get('/api/chat/nao-lidas');
+      const badge = document.getElementById('chat-badge');
+      if (badge) {
+        if (total > 0) { badge.textContent = total; badge.classList.remove('hidden'); }
+        else { badge.classList.add('hidden'); }
+      }
+      if (total > this._chatNaoLidasAnterior) {
+        this._mostrarToast('💬 Nova mensagem no chat', 'Você recebeu uma nova mensagem.', () => this.navigate('chat'));
+      }
+      this._chatNaoLidasAnterior = total;
+    } catch (_) { /* silencioso */ }
+  },
+
+  _mostrarToast(titulo, corpo, aoClicar) {
     const root = document.getElementById('toast-root');
     if (!root) return;
     const toast = document.createElement('div');
     toast.className = 'toast';
     toast.innerHTML = `
-      <div class="toast-title">🆕 Novo chamado #${item.id}</div>
-      <div class="toast-body">${item.solicitante || 'Solicitante'} — ${item.tipo || ''}</div>
+      <div class="toast-title">${titulo}</div>
+      <div class="toast-body">${corpo}</div>
     `;
-    toast.addEventListener('click', () => { this.navigate('novas'); toast.remove(); });
+    toast.addEventListener('click', () => { aoClicar(); toast.remove(); });
     root.appendChild(toast);
     setTimeout(() => toast.remove(), 8000);
   }

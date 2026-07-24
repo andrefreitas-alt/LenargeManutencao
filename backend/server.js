@@ -24,6 +24,7 @@ app.use('/api/solicitacoes', require('./routes/solicitacoes'));
 app.use('/api/cadastro', require('./routes/cadastro'));
 app.use('/api/usuarios', require('./routes/usuarios'));
 app.use('/api/dashboard', require('./routes/dashboard'));
+app.use('/api/chat', require('./routes/chat'));
 
 const frontendPath = path.join(__dirname, '..', 'frontend');
 app.use(express.static(frontendPath));

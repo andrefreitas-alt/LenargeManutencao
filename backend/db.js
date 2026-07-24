@@ -65,11 +65,22 @@ async function migrate() {
       );
     `);
 
-    // Migrações incrementais (colunas adicionadas após a criação inicial das tabelas)
     await client.query(`ALTER TABLE solicitacoes ADD COLUMN IF NOT EXISTS data_agendada TEXT NOT NULL DEFAULT '';`);
     await client.query(`UPDATE solicitacoes SET data_agendada = data_abertura WHERE data_agendada = '';`);
-
     await client.query(`ALTER TABLE solicitacoes ADD COLUMN IF NOT EXISTS visto BOOLEAN NOT NULL DEFAULT FALSE;`);
+
+    // Chat interno de suporte (Admin <-> Solicitante)
+    await client.query(`
+      CREATE TABLE IF NOT EXISTS chat_mensagens (
+        id                    SERIAL PRIMARY KEY,
+        solicitante_usuario_id INTEGER NOT NULL REFERENCES usuarios(id),
+        remetente_usuario_id   INTEGER NOT NULL REFERENCES usuarios(id),
+        mensagem                TEXT NOT NULL,
+        solicitacao_ref_id      INTEGER REFERENCES solicitacoes(id),
+        lida                    BOOLEAN NOT NULL DEFAULT FALSE,
+        criado_em               TEXT NOT NULL
+      );
+    `);
 
     const usuariosRes = await client.query('SELECT COUNT(*) AS c FROM usuarios');
     if (parseInt(usuariosRes.rows[0].c) === 0) {
