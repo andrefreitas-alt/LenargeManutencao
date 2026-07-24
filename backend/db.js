@@ -1,5 +1,6 @@
 // db.js
 // Configuração de conexão com o PostgreSQL (usa a variável de ambiente DATABASE_URL)
+require('dotenv').config();
 const { Pool } = require('pg');
 const { hashPassword } = require('./services/passwordHasher');
 
